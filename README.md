@@ -59,5 +59,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
 ### Phase 2: v0 Firefox Extension Prototype
 - [x] **Task 2.1: Extension Scaffold**
   - *Outcome*: MV3 `manifest.json` (activeTab, storage, scripting; http/https content scripts; gecko min 109.0), `src/content/sift.js` plus `sift.css` placeholder, `icons/icon.svg`, `test/test-page.html` fixture. Verified with JSON load and `node --check`.
-- [ ] **Task 2.2: Rough design of complete firefox extension.
+- [x] **Task 2.2: Rough design of complete Firefox extension**
+  - *Outcome*: Designed four Paper artboards for the reading surface, highlight and hold drawer, scratchpad, and Ask response flow in the [Sift Paper file](https://app.paper.design/file/01M4GAKBDMZVWQZ2GK8DPNXR0C/p-1-0).
 - [ ] **Task 2.3: Laying out the  plan of the extension.
