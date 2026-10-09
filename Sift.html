@@ -82,7 +82,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .prior > :first-child { margin-top: auto; }
 .prior p { margin: 0; color: var(--slate); font-size: 14px; line-height: 28px; opacity: .72; }
 .s.hl, .mark { background: var(--tint); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding-inline: 2px; color: var(--ink); }
-.seek-word { background: var(--terra); color: var(--paper); border-radius: 3px; padding-inline: 2px; }
+.seek-word { background: var(--tint); border-radius: 3px; padding-inline: 2px; }
 .fixed { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 8px 20px 12px; }
 .active {
   box-sizing: border-box;
@@ -328,12 +328,14 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     activeText.replaceChildren();
     if (hl.has(idx)) { inner = document.createElement('span'); inner.className = 'mark'; activeText.appendChild(inner); }
     var words = cur.t.match(/\S+\s*/g) || [cur.t];
-    words.forEach(function (text, i) {
+    var visibleWords = wordSeek && wordSeek.idx === idx ? wordSeek.word + 1 : words.length;
+    words.slice(0, visibleWords).forEach(function (text, i) {
       var word = document.createElement('span');
       word.className = wordSeek && wordSeek.idx === idx && wordSeek.word === i ? 'seek-word' : '';
       word.textContent = text;
       inner.appendChild(word);
     });
+    if (visibleWords < words.length) inner.appendChild(document.createTextNode('…'));
     activeText.className = cur.t.length > 170 ? 'xl' : cur.t.length > 110 ? 'l' : cur.t.length > 60 ? 'm' : '';
     activeEl.scrollTop = 0;
   }
