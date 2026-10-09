@@ -57,7 +57,7 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Expanded `sift.tldraw` with 4 structured visual frames (The Problem & Commute Context, Current Alternatives vs Sift, Interaction & Gesture Blueprint, and v0 Architecture) containing 15 comprehensive cards directly synthesized from the Craft document.
 
 ### Phase 2: v0 Firefox Extension Prototype
-- [ ] **Task 2.1: Extension Scaffold**
-  - *Outcome*: Setup WebExtensions Manifest V3, directory structure, and permissions.
+- [x] **Task 2.1: Extension Scaffold**
+  - *Outcome*: MV3 `manifest.json` (activeTab, storage, scripting; http/https content scripts; gecko min 109.0), `src/content/sift.js` plus `sift.css` placeholder, `icons/icon.svg`, `test/test-page.html` fixture. Verified with JSON load and `node --check`.
 - [ ] **Task 2.2: Rough design of complete firefox extension.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
