@@ -410,17 +410,19 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     render(); vibrate(14);
   }
 
+  function flashDrawer() {
+    drawer.classList.add('flash');
+    setTimeout(function () { drawer.classList.remove('flash'); }, 700);
+  }
+
   function drop(i) {
     wordSeek = null;
     hl.add(i);
     if (scratch.some(function (c) { return c.type === 'q' && c.idx === i; })) {
-      toast('Already in your scratchpad');
     } else {
       scratch.unshift({ id: ++uid, type: 'q', idx: i, text: S[i].t });
-      toast('Dropped into scratchpad');
-      drawer.classList.add('flash');
-      setTimeout(function () { drawer.classList.remove('flash'); }, 700);
     }
+    flashDrawer();
     render(); vibrate([10, 30, 10]);
   }
 
@@ -537,7 +539,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   });
   $('saveAns').addEventListener('click', function () {
     scratch.unshift({ id: ++uid, type: 'ai', idx: askIdx, text: answerText });
-    hideSheets(); render(); toast('Saved to scratchpad');
+    hideSheets(); render(); flashDrawer();
   });
   /* keyboard */
   document.addEventListener('keydown', function (e) {

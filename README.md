@@ -73,4 +73,7 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
 - [x] **Task 2.10: Word-level seek reveal**
   - *Outcome*: Changed horizontal seeking from sentence jumps to progressive word reveal, with the active sentence anchored at the top of its panel to prevent vertical movement while seeking.
   - *Reason*: Make seeking more precise without moving the reading anchor or distracting the reader with whole-sentence motion.
+- [x] **Task 2.11: Quiet scratchpad feedback**
+  - *Outcome*: Removed sentence-save toasts. New and duplicate saves now use a brief scratchpad opacity increase as the only feedback.
+  - *Reason*: Keep saving immediate and quiet without interrupting the reading surface with a notification pill.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
