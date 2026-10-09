@@ -65,4 +65,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Recolored the standalone Sift interface with Flexoki's warm paper, ink, UI, and cyan accent tokens while preserving the existing reading interactions.
 - [x] **Task 2.5: Flexoki dark theme variant**
   - *Outcome*: Added `Sift-dark.html`, a standalone dark-theme variant using Flexoki's dark paper, ink, UI, and cyan accent tokens.
+- [x] **Task 2.8: Remove visible top seekbar**
+  - *Outcome*: Removed the top seekbar from the reading surface while keeping horizontal scrub seeking available in the article area.
 - [ ] **Task 2.3: Laying out the  plan of the extension.

@@ -2,7 +2,7 @@
 <title>Sift</title>
 <style>
 /* Layout: one phone-sized reader (390 x 844 max) centred on a quiet stage.
-   Header, a seekable progress line, read text that scrolls on its own, a fixed active sentence,
+   Header, read text that scrolls on its own, a fixed active sentence,
    and an always-open scratchpad at half opacity.
    The look uses Flexoki's dark warm paper, ink, and cyan interface colors and stays one theme on purpose. */
 :root {
@@ -178,7 +178,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     <span class="brand">SIFT</span>
     <button class="doc" id="docBtn" aria-label="Open another article"><span class="t" id="docTitle">The Long Way Home</span><span aria-hidden="true">×</span></button>
   </header>
-  <div class="seek" id="seek" role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
+  <div class="seek" id="seek" hidden role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
     <div class="progress"><i id="bar"></i></div>
   </div>
 
