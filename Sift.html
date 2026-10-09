@@ -50,6 +50,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 
 /* header */
 .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 15px 15px 6px; }
+.brandgroup { display: flex; align-items: center; gap: 4px; }
 .brand { color: var(--terra); font: 700 14px/18px var(--sans); letter-spacing: .12em; }
 .doc { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 32px; color: var(--slate); font: 700 13px/16px var(--sans); letter-spacing: .08em; text-transform: uppercase; }
 .doc span.t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -81,12 +82,6 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .prior > :first-child { margin-top: auto; }
 .prior p { margin: 0; color: var(--slate); font-size: 14px; line-height: 28px; opacity: .72; }
 .s.hl, .mark { background: var(--tint); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding-inline: 2px; color: var(--ink); }
-.peek {
-  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
-  padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--paper);
-  font: 700 11px/14px var(--sans); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
-  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, .6);
-}
 .fixed { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 8px 20px 12px; }
 .active {
   box-sizing: border-box;
@@ -119,8 +114,9 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
   transition: opacity .3s;
 }
 .drawer.flash { opacity: .95; }
-.dhead { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.dhead { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
 .ib { display: grid; place-items: center; width: 44px; height: 44px; color: var(--terra); }
+.top .ib { width: 32px; height: 32px; }
 .dlist { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 2px 10px 10px; }
 .chip { display: flex; align-items: flex-start; gap: 8px; padding: 8px 4px 8px 10px; background: var(--tint); border-left: 4px solid var(--terra); border-radius: 4px; user-select: text; -webkit-user-select: text; }
 .chip .body { flex: 1; min-width: 0; }
@@ -129,27 +125,15 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .chip .rm { flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; color: var(--slate); font: 400 20px/1 var(--sans); }
 .empty { margin: 0; padding: 14px 12px 18px; color: var(--slate); font-size: 14px; line-height: 21px; text-align: center; }
 
-/* hold zones */
-.zones { position: absolute; left: 15px; right: 15px; bottom: 15px; height: 140px; z-index: 20; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.zone {
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  border: 2px dashed var(--terra); border-radius: 10px; background: rgba(28, 27, 26, .96); color: var(--terra);
-  font: 700 12px/16px var(--sans); letter-spacing: .1em; text-transform: uppercase; text-align: center;
-  transition: background .15s, color .15s, transform .15s;
-}
-.zone small { font: 400 12px/16px var(--serif); letter-spacing: 0; text-transform: none; opacity: .85; }
-.zone.over { background: var(--terra); color: var(--paper); transform: scale(1.03); border-style: solid; }
-.phone.holding .active { animation: pulse 1s ease-in-out infinite; }
-@keyframes pulse { 50% { border-color: var(--terra); } }
-
 /* sheets */
 .scrim { position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; background: rgba(0, 0, 0, .45); }
-.sheet { width: 100%; max-height: 82%; overflow-y: auto; box-sizing: border-box; padding: 18px 16px 20px; background: var(--paper); border-radius: 18px 18px 0 0; animation: rise .25s cubic-bezier(.2, .7, .2, 1); }
+.sheet { position: relative; width: 100%; max-height: 82%; overflow-y: auto; box-sizing: border-box; padding: 18px 16px 20px; background: var(--paper); border-radius: 18px 18px 0 0; animation: rise .25s cubic-bezier(.2, .7, .2, 1); }
+.sheet-close { position: absolute; top: 8px; right: 10px; display: grid; place-items: center; width: 32px; height: 32px; color: var(--slate); font: 400 24px/1 var(--sans); }
 @keyframes rise { from { transform: translateY(24px); opacity: 0; } }
 .sheet h2 { margin: 0 0 12px; color: var(--terra); font: 700 12px/16px var(--sans); letter-spacing: .12em; text-transform: uppercase; }
 .quote { margin: 0 0 14px; padding: 8px 10px; background: var(--tint); border-left: 4px solid var(--terra); border-radius: 4px; font-size: 14px; line-height: 21px; }
 .modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-.pill { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--terra); color: var(--terra); font: 700 12px/16px var(--sans); letter-spacing: .04em; }
+.pill { min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid var(--terra); color: var(--terra); font: 700 12px/16px var(--sans); letter-spacing: .04em; }
 .pill[aria-pressed="true"], .pill.primary { background: var(--terra); color: var(--paper); }
 .pill:disabled { opacity: .4; cursor: default; }
 .answer { min-height: 78px; margin: 0 0 14px; font-size: 17px; line-height: 26px; }
@@ -175,8 +159,13 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
 
 <div class="phone" id="phone">
   <header class="top">
-    <span class="brand">SIFT</span>
-    <button class="doc" id="docBtn" aria-label="Open another article"><span class="t" id="docTitle">The Long Way Home</span><span aria-hidden="true">×</span></button>
+    <div class="brandgroup">
+      <span class="brand">SIFT</span>
+      <button class="ib" id="infoBtn" aria-label="How gestures work">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.944" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 13.333v-3.333" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 6.667h0.008" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+    <div class="doc" aria-label="Current article"><span class="t" id="docTitle">The Long Way Home</span></div>
   </header>
   <div class="seek" id="seek" hidden role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">
     <div class="progress"><i id="bar"></i></div>
@@ -185,7 +174,6 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   <main class="stream" id="stream" aria-label="Reading stream">
     <div class="priorwrap">
       <div class="prior" id="prior" aria-label="Already read"></div>
-      <button class="peek" id="peek" hidden>Back to your place ↓</button>
     </div>
     <div class="fixed">
       <div class="active" id="active"><p id="activeText"></p></div>
@@ -195,26 +183,12 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
 
   <section class="drawer" id="drawer" aria-label="Scratchpad">
     <div class="dhead">
-      <button class="ib" id="infoBtn" aria-label="How gestures work">
-        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.944" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 13.333v-3.333" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 6.667h0.008" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
       <button class="ib" id="copyBtn" aria-label="Copy all excerpts">
         <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><rect width="11.667" height="11.667" x="6.667" y="6.667" rx="2" ry="2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3.333 13.333c-0.917 0-1.667-0.75-1.666-1.666V3.333c0-0.917 0.75-1.667 1.666-1.666h8.334c0.917 0 1.667 0.75 1.666 1.666" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>
     </div>
     <div class="dlist" id="dlist"></div>
   </section>
-
-  <div class="zones" id="zones" hidden>
-    <button class="zone" data-act="drop">
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4M12 4v10m0 0l-4-4m4 4l4-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Drop<small>into scratchpad</small>
-    </button>
-    <button class="zone" data-act="ask">
-      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3zM19 16l.7 1.8L21.5 18.5l-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7L19 16z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Ask<small>on-device AI</small>
-    </button>
-  </div>
 
   <div class="scrim" id="scrim" hidden>
     <section class="sheet" id="sh-ask" hidden aria-label="Ask">
@@ -232,28 +206,16 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
       <p class="note">Prototype only. Replies are written in advance for the sample article. A real build would call a model running on the phone.</p>
     </section>
 
-    <section class="sheet" id="sh-guide" hidden aria-label="Gestures">
-      <h2>Gestures</h2>
+    <section class="sheet" id="sh-guide" hidden aria-label="Info">
+      <button class="sheet-close" data-close aria-label="Close info">×</button>
+      <h2>Info</h2>
       <dl class="guide">
-        <div><dt>Tap</dt><dd>Next sentence, at your own pace.</dd></div>
-        <div><dt>Slide</dt><dd>Drag left or right to seek through the article, like scrubbing a video. The progress line at the top works the same way.</dd></div>
-        <div><dt>Scroll up</dt><dd>Only the text you have already read scrolls. Your current sentence stays put.</dd></div>
-        <div><dt>Double-tap</dt><dd>Highlight the sentence you are on.</dd></div>
-        <div><dt>Hold</dt><dd>Keep pressing, slide to Drop or Ask, then let go.</dd></div>
+        <div><dt>Slide</dt><dd>Drag left or right sentence to seek through the article.</dd></div>
+        <div><dt>Scroll up</dt><dd>Scroll the text you have already read.</dd></div>
+        <div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>
       </dl>
-      <p class="note">On a keyboard: Right arrow or Space is next, Left arrow is back, H highlights, D drops, A asks.</p>
-      <div class="row" style="margin-top:14px"><button class="pill primary" data-close>Got it</button></div>
     </section>
 
-    <section class="sheet" id="sh-open" hidden aria-label="Open article">
-      <h2>Open an article</h2>
-      <textarea id="txt" placeholder="Paste any article text here. Blank lines start a new paragraph."></textarea>
-      <div class="row">
-        <button class="pill primary" id="loadTxt">Read this text</button>
-        <button class="pill" id="loadSample">Use sample article</button>
-        <button class="pill" data-close>Cancel</button>
-      </div>
-    </section>
   </div>
 
   <div class="toast" id="toast" role="status"></div>
@@ -265,8 +227,8 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   var $ = function (id) { return document.getElementById(id); };
   var stream = $('stream'), priorEl = $('prior'), activeEl = $('active'), activeText = $('activeText');
   var hintMsg = $('hintMsg'), countEl = $('count'), bar = $('bar'), phone = $('phone'), seekEl = $('seek');
-  var drawer = $('drawer'), dlist = $('dlist'), zones = $('zones');
-  var scrim = $('scrim'), toastEl = $('toast'), peek = $('peek');
+  var drawer = $('drawer'), dlist = $('dlist');
+  var scrim = $('scrim'), toastEl = $('toast');
   var STEP = 24; /* pixels of horizontal drag per sentence */
 
   var SAMPLE = [
@@ -302,7 +264,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
 
   var S = [], title = '', idx = 0, hl = new Set(), scratch = [], uid = 0;
   var advances = 0, lastTap = null, askIdx = 0, askMode = 'ex', answerText = '', typer = null;
-  var g = null, armTimer = null, toastTimer = null, seeking = false;
+  var g = null, toastTimer = null, seeking = false;
 
   function loadSample() {
     S = [];
@@ -368,7 +330,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     if (!scratch.length) {
       var e = document.createElement('p');
       e.className = 'empty';
-      e.textContent = 'Nothing here yet. Hold a sentence, slide to Drop, and it lands here.';
+      e.textContent = 'Nothing here yet. Double-tap a sentence and it lands here.';
       dlist.appendChild(e);
       return;
     }
@@ -427,21 +389,20 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     render(); vibrate([10, 30, 10]);
   }
 
-  function onTap() {
+  function onDoubleTap() {
     var now = performance.now();
     if (lastTap && now - lastTap.t < 320) {
-      var i = lastTap.idx; lastTap = null;
-      idx = i; toggleHl(i); scrollEnd();
+      lastTap = null;
+      drop(idx);
       return;
     }
     lastTap = { t: now, idx: idx };
-    go(1);
   }
 
   /* sheets */
   function showSheet(name) {
     scrim.hidden = false;
-    ['ask', 'guide', 'open'].forEach(function (n) { $('sh-' + n).hidden = (n !== name); });
+    ['ask', 'guide'].forEach(function (n) { $('sh-' + n).hidden = (n !== name); });
   }
   function hideSheets() { scrim.hidden = true; clearInterval(typer); }
 
@@ -467,47 +428,18 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     showSheet('ask'); runAsk();
   }
 
-  /* hold zones */
-  function setOver(act) {
-    if (g) g.over = act;
-    zones.querySelectorAll('.zone').forEach(function (z) { z.classList.toggle('over', z.dataset.act === act); });
-  }
-  function openZones() {
-    if (!hl.has(idx)) { hl.add(idx); render(); }
-    zones.hidden = false; phone.classList.add('holding'); setOver(null);
-  }
-  function closeZones() {
-    zones.hidden = true; phone.classList.remove('holding'); clearTimeout(armTimer); setOver(null);
-  }
-  function commit(act) {
-    closeZones();
-    if (act === 'drop') drop(idx); else openAsk(idx);
-  }
-
-  /* gestures on the reading area: tap, double-tap, hold, slide to seek */
+  /* gestures on the reading area: double-tap to save, slide to seek */
   stream.addEventListener('contextmenu', function (e) { e.preventDefault(); });
   stream.addEventListener('pointerdown', function (e) {
     if (e.button > 0 || !scrim.hidden) return;
-    if (e.target.closest && e.target.closest('.peek')) return;
-    closeZones();
     try { stream.setPointerCapture(e.pointerId); } catch (err) {}
-    g = { x: e.clientX, y: e.clientY, start: idx, moved: false, held: false, scrub: null, over: null };
-    g.timer = setTimeout(function () {
-      if (!g || g.moved) return;
-      g.held = true; openZones(); vibrate(20);
-    }, 450);
+    g = { x: e.clientX, y: e.clientY, start: idx, moved: false, scrub: null };
   });
   stream.addEventListener('pointermove', function (e) {
     if (!g) return;
-    if (g.held) {
-      var el = document.elementFromPoint(e.clientX, e.clientY);
-      var z = el && el.closest ? el.closest('.zone') : null;
-      setOver(z ? z.dataset.act : null);
-      return;
-    }
     var dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (!g.moved && Math.hypot(dx, dy) > 10) {
-      g.moved = true; clearTimeout(g.timer);
+      g.moved = true;
       g.scrub = Math.abs(dx) > Math.abs(dy) * 1.2;
       if (g.scrub) phone.classList.add('scrubbing');
     }
@@ -519,22 +451,13 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   function endScrub() { phone.classList.remove('scrubbing'); }
   stream.addEventListener('pointerup', function (e) {
     if (!g) return;
-    clearTimeout(g.timer);
     var s = g; g = null;
-    if (s.held) {
-      if (s.over) commit(s.over);
-      else { clearTimeout(armTimer); armTimer = setTimeout(closeZones, 3500); }
-      return;
-    }
     if (s.scrub) { endScrub(); return; }
     if (s.moved) return;
-    onTap();
+    onDoubleTap();
   });
   stream.addEventListener('pointercancel', function () {
-    if (g) { clearTimeout(g.timer); if (g.held) closeZones(); endScrub(); g = null; }
-  });
-  zones.querySelectorAll('.zone').forEach(function (z) {
-    z.addEventListener('click', function () { commit(z.dataset.act); });
+    if (g) { endScrub(); g = null; }
   });
 
   /* seek line */
@@ -553,15 +476,8 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   seekEl.addEventListener('pointerup', endSeek);
   seekEl.addEventListener('pointercancel', endSeek);
 
-  /* only the read text scrolls; offer a way back to the current sentence */
-  priorEl.addEventListener('scroll', function () {
-    peek.hidden = !(priorEl.scrollHeight - priorEl.scrollTop - priorEl.clientHeight > 60);
-  });
-  peek.addEventListener('click', function () { scrollEnd(); });
-
   /* header + pad buttons */
   $('infoBtn').addEventListener('click', function () { showSheet('guide'); });
-  $('docBtn').addEventListener('click', function () { showSheet('open'); });
   $('copyBtn').addEventListener('click', function () {
     if (!scratch.length) { toast('Nothing to copy yet'); return; }
     var text = scratch.slice().reverse().map(function (c) { return c.type === 'ai' ? 'AI note: ' + c.text : '“' + c.text + '”'; }).join('\n\n');
@@ -585,15 +501,9 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     scratch.unshift({ id: ++uid, type: 'ai', idx: askIdx, text: answerText });
     hideSheets(); render(); toast('Saved to scratchpad');
   });
-  $('loadSample').addEventListener('click', function () { loadSample(); hideSheets(); render(); scrollEnd(true); });
-  $('loadTxt').addEventListener('click', function () {
-    if (loadText($('txt').value)) { hideSheets(); render(); scrollEnd(true); toast('Ready. Tap to begin.'); }
-    else toast('Paste some text first');
-  });
-
   /* keyboard */
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape') { hideSheets(); closeZones(); return; }
+    if (e.key === 'Escape') { hideSheets(); return; }
     if (!scrim.hidden) return;
     var t = e.target;
     if (t && t.closest && t.closest('textarea,button')) return;
