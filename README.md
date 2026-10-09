@@ -67,4 +67,10 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Added `Sift-dark.html`, a standalone dark-theme variant using Flexoki's dark paper, ink, UI, and cyan accent tokens.
 - [x] **Task 2.8: Remove visible top seekbar**
   - *Outcome*: Removed the top seekbar from the reading surface while keeping horizontal scrub seeking available in the article area.
+- [x] **Task 2.9: Focused reading interaction pass**
+  - *Outcome*: Reduced distraction by removing single-tap advancement, hold zones, the back-to-place pill, and the open-article dialog. Double-tap now highlights and saves to the scratchpad, the info control sits beside SIFT, and the guide no longer exposes keyboard instructions.
+  - *Reason*: Keep the reading surface stable and glance-friendly, avoid accidental navigation, and reserve gestures for deliberate actions.
+- [x] **Task 2.10: Word-level seek reveal**
+  - *Outcome*: Changed horizontal seeking from sentence jumps to progressive word reveal, with the active sentence anchored at the top of its panel to prevent vertical movement while seeking.
+  - *Reason*: Make seeking more precise without moving the reading anchor or distracting the reader with whole-sentence motion.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
