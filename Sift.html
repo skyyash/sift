@@ -82,6 +82,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .prior > :first-child { margin-top: auto; }
 .prior p { margin: 0; color: var(--slate); font-size: 14px; line-height: 28px; opacity: .72; }
 .s.hl, .mark { background: var(--tint); box-decoration-break: clone; -webkit-box-decoration-break: clone; padding-inline: 2px; color: var(--ink); }
+.seek-word { background: var(--terra); color: var(--paper); border-radius: 3px; padding-inline: 2px; }
 .fixed { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 8px 20px 12px; }
 .active {
   box-sizing: border-box;
@@ -210,7 +211,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
       <button class="sheet-close" data-close aria-label="Close info">×</button>
       <h2>Info</h2>
       <dl class="guide">
-        <div><dt>Slide</dt><dd>Drag left or right sentence to seek through the article.</dd></div>
+        <div><dt>Slide</dt><dd>Drag left or right to move through the article one word at a time.</dd></div>
         <div><dt>Scroll up</dt><dd>Scroll the text you have already read.</dd></div>
         <div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>
       </dl>
@@ -264,7 +265,8 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
 
   var S = [], title = '', idx = 0, hl = new Set(), scratch = [], uid = 0;
   var advances = 0, lastTap = null, askIdx = 0, askMode = 'ex', answerText = '', typer = null;
-  var g = null, toastTimer = null, seeking = false;
+  var g = null, toastTimer = null, seeking = false, wordSeek = null;
+  var WORD_STEP = 14;
 
   function loadSample() {
     S = [];
@@ -310,11 +312,7 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
       sp.textContent = S[i].t + ' ';
       para.appendChild(sp);
     }
-    activeText.replaceChildren();
-    var inner = activeText;
-    if (hl.has(idx)) { inner = document.createElement('span'); inner.className = 'mark'; activeText.appendChild(inner); }
-    inner.appendChild(document.createTextNode(cur.t));
-    activeText.className = cur.t.length > 170 ? 'xl' : cur.t.length > 110 ? 'l' : cur.t.length > 60 ? 'm' : '';
+    renderActive();
     activeEl.scrollTop = 0;
     bar.style.width = (S.length > 1 ? idx / (S.length - 1) * 100 : 100) + '%';
     seekEl.setAttribute('aria-valuemax', String(S.length));
@@ -323,6 +321,21 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     if (idx === S.length - 1) hintMsg.textContent = 'End of article · ' + scratch.length + ' saved';
     else hintMsg.textContent = '';
     renderDrawer();
+  }
+
+  function renderActive() {
+    var cur = S[idx], inner = activeText;
+    activeText.replaceChildren();
+    if (hl.has(idx)) { inner = document.createElement('span'); inner.className = 'mark'; activeText.appendChild(inner); }
+    var words = cur.t.match(/\S+\s*/g) || [cur.t];
+    words.forEach(function (text, i) {
+      var word = document.createElement('span');
+      word.className = wordSeek && wordSeek.idx === idx && wordSeek.word === i ? 'seek-word' : '';
+      word.textContent = text;
+      inner.appendChild(word);
+    });
+    activeText.className = cur.t.length > 170 ? 'xl' : cur.t.length > 110 ? 'l' : cur.t.length > 60 ? 'm' : '';
+    activeEl.scrollTop = 0;
   }
 
   function renderDrawer() {
@@ -364,7 +377,25 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
     return true;
   }
 
+  function wordsFor(i) { return S[i].t.match(/\S+\s*/g) || [S[i].t]; }
+
+  function moveWord(startIdx, startWord, steps) {
+    var nextIdx = startIdx, nextWord = startWord;
+    while (steps > 0 && nextIdx < S.length - 1) {
+      if (nextWord < wordsFor(nextIdx).length - 1) nextWord++;
+      else { nextIdx++; nextWord = 0; }
+      steps--;
+    }
+    while (steps < 0 && nextIdx > 0) {
+      if (nextWord > 0) nextWord--;
+      else { nextIdx--; nextWord = wordsFor(nextIdx).length - 1; }
+      steps++;
+    }
+    return { idx: nextIdx, word: nextWord };
+  }
+
   function go(d) {
+    wordSeek = null;
     if (!setIdx(idx + d)) { if (d > 0) toast('End of article'); return; }
     if (d > 0) advances++;
     if (!rm && activeEl.animate) activeEl.animate([{ opacity: .35 }, { opacity: 1 }], { duration: 140, easing: 'ease-out' });
@@ -372,11 +403,13 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   }
 
   function toggleHl(i) {
+    wordSeek = null;
     if (hl.has(i)) hl.delete(i); else hl.add(i);
     render(); vibrate(14);
   }
 
   function drop(i) {
+    wordSeek = null;
     hl.add(i);
     if (scratch.some(function (c) { return c.type === 'q' && c.idx === i; })) {
       toast('Already in your scratchpad');
@@ -433,7 +466,8 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
   stream.addEventListener('pointerdown', function (e) {
     if (e.button > 0 || !scrim.hidden) return;
     try { stream.setPointerCapture(e.pointerId); } catch (err) {}
-    g = { x: e.clientX, y: e.clientY, start: idx, moved: false, scrub: null };
+    g = { x: e.clientX, y: e.clientY, start: idx, startWord: wordSeek && wordSeek.idx === idx ? wordSeek.word : 0, target: { idx: idx, word: 0 }, moved: false, scrub: null };
+    g.target.word = g.startWord;
   });
   stream.addEventListener('pointermove', function (e) {
     if (!g) return;
@@ -444,20 +478,22 @@ textarea:focus-visible { outline: 2px solid var(--terra); outline-offset: 1px; }
       if (g.scrub) phone.classList.add('scrubbing');
     }
     if (g.scrub) {
-      var n = g.start - Math.round(dx / STEP);
-      if (setIdx(n, true)) vibrate(3);
+      var target = moveWord(g.start, g.startWord, Math.round(-dx / WORD_STEP));
+      g.target = target;
+      if (target.idx !== idx) { wordSeek = target; idx = target.idx; render(); scrollEnd(true); }
+      else { wordSeek = target; renderActive(); }
     }
   });
   function endScrub() { phone.classList.remove('scrubbing'); }
   stream.addEventListener('pointerup', function (e) {
     if (!g) return;
     var s = g; g = null;
-    if (s.scrub) { endScrub(); return; }
+    if (s.scrub) { wordSeek = s.target; renderActive(); endScrub(); return; }
     if (s.moved) return;
     onDoubleTap();
   });
   stream.addEventListener('pointercancel', function () {
-    if (g) { endScrub(); g = null; }
+    if (g) { idx = g.start; wordSeek = { idx: g.start, word: g.startWord }; render(); scrollEnd(true); endScrub(); g = null; }
   });
 
   /* seek line */
