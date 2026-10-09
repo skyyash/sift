@@ -67,8 +67,8 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Settled on **Sift** as the project identity. Renamed all project artifacts, tldraw canvas document settings, and workspace references from `firefox-extension` to `sift`.
 - [x] **Task 1.2: Craft Document Integration & Problem Synthesis**
   - *Outcome*: Linked Craft design document (`https://s.craft.me/XzpiUGYwkZq3Fu`). Synthesized core user journey (commute reading, looking away without losing spot), comparative breakdown against Obsidian and Seratim readers, and defined the gesture model.
-- [ ] **Task 1.3: Canvas Visual Blueprint Expansion**
-  - *Outcome*: Update `sift.tldraw` with structured visual frames covering Problem Definition, Existing Tools Breakdown, Gesture Map, and v0 Architecture.
+- [x] **Task 1.3: Canvas Visual Blueprint Expansion**
+  - *Outcome*: Expanded `sift.tldraw` with 4 structured visual frames (The Problem & Commute Context, Current Alternatives vs Sift, Interaction & Gesture Blueprint, and v0 Architecture) containing 15 comprehensive cards directly synthesized from the Craft document.
 
 ### Phase 2: v0 Firefox Extension Prototype
 - [ ] **Task 2.1: Extension Scaffold**
