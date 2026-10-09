@@ -61,4 +61,8 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: MV3 `manifest.json` (activeTab, storage, scripting; http/https content scripts; gecko min 109.0), `src/content/sift.js` plus `sift.css` placeholder, `icons/icon.svg`, `test/test-page.html` fixture. Verified with JSON load and `node --check`.
 - [x] **Task 2.2: Rough design of complete Firefox extension**
   - *Outcome*: Designed four Paper artboards for the reading surface, highlight and hold drawer, scratchpad, and Ask response flow in the [Sift Paper file](https://app.paper.design/file/01M4GAKBDMZVWQZ2GK8DPNXR0C/p-1-0).
+- [x] **Task 2.4: Flexoki theme pass**
+  - *Outcome*: Recolored the standalone Sift interface with Flexoki's warm paper, ink, UI, and cyan accent tokens while preserving the existing reading interactions.
+- [x] **Task 2.5: Flexoki dark theme variant**
+  - *Outcome*: Added `Sift-dark.html`, a standalone dark-theme variant using Flexoki's dark paper, ink, UI, and cyan accent tokens.
 - [ ] **Task 2.3: Laying out the  plan of the extension.

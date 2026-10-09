@@ -4,17 +4,17 @@
 /* Layout: one phone-sized reader (390 x 844 max) centred on a quiet stage.
    Header, a seekable progress line, read text that scrolls on its own, a fixed active sentence,
    and an always-open scratchpad at half opacity.
-   The look follows the supplied mockup (paper, terracotta, slate, Georgia) and stays one theme on purpose. */
+   The look uses Flexoki's warm paper, ink, and cyan interface colors and stays one theme on purpose. */
 :root {
-  --stage: #E6DFD2;
-  --paper: #F6F1E8;
-  --card: #FFFFFF;
-  --terra: #B45F3C;
-  --tint: #E8C9B8;
-  --slate: #5F6A73;
-  --ink: #1E252B;
-  --rule: rgba(30, 37, 43, .55);
-  --hair: rgba(30, 37, 43, .14);
+  --stage: #F2F0E5;
+  --paper: #FFFCF0;
+  --card: #F2F0E5;
+  --terra: #24837B;
+  --tint: #DDF1E4;
+  --slate: #6F6E69;
+  --ink: #100F0F;
+  --rule: #DAD8CE;
+  --hair: #CECDC3;
   --sans: "Arial", "Helvetica Neue", system-ui, sans-serif;
   --serif: "Georgia", "Times New Roman", serif;
   color-scheme: light;
@@ -45,7 +45,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
   overflow: hidden;
   background: var(--paper);
   border-radius: 28px;
-  box-shadow: 0 0 0 1px var(--hair), 0 24px 48px -24px rgba(30, 37, 43, .35);
+  box-shadow: 0 0 0 1px var(--hair), 0 24px 48px -24px rgba(16, 15, 15, .35);
 }
 
 /* header */
@@ -85,7 +85,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
   position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
   padding: 8px 14px; border-radius: 999px; background: var(--ink); color: var(--paper);
   font: 700 11px/14px var(--sans); letter-spacing: .08em; text-transform: uppercase; white-space: nowrap;
-  box-shadow: 0 6px 16px -6px rgba(30, 37, 43, .5);
+  box-shadow: 0 6px 16px -6px rgba(16, 15, 15, .5);
 }
 .fixed { flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; padding: 8px 20px 12px; }
 .active {
@@ -125,7 +125,7 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .chip { display: flex; align-items: flex-start; gap: 8px; padding: 8px 4px 8px 10px; background: var(--tint); border-left: 4px solid var(--terra); border-radius: 4px; user-select: text; -webkit-user-select: text; }
 .chip .body { flex: 1; min-width: 0; }
 .chip p { margin: 0; font-size: 14px; line-height: 21px; color: var(--ink); overflow-wrap: anywhere; }
-.chip .tag { display: inline-block; margin-bottom: 2px; padding: 1px 6px; border-radius: 3px; background: var(--terra); color: #fff; font: 700 9px/14px var(--sans); letter-spacing: .12em; }
+.chip .tag { display: inline-block; margin-bottom: 2px; padding: 1px 6px; border-radius: 3px; background: var(--terra); color: var(--paper); font: 700 9px/14px var(--sans); letter-spacing: .12em; }
 .chip .rm { flex-shrink: 0; display: grid; place-items: center; width: 32px; height: 32px; color: var(--slate); font: 400 20px/1 var(--sans); }
 .empty { margin: 0; padding: 14px 12px 18px; color: var(--slate); font-size: 14px; line-height: 21px; text-align: center; }
 
@@ -133,24 +133,24 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .zones { position: absolute; left: 15px; right: 15px; bottom: 15px; height: 140px; z-index: 20; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .zone {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px;
-  border: 2px dashed var(--terra); border-radius: 10px; background: rgba(246, 241, 232, .96); color: var(--terra);
+  border: 2px dashed var(--terra); border-radius: 10px; background: rgba(255, 252, 240, .96); color: var(--terra);
   font: 700 12px/16px var(--sans); letter-spacing: .1em; text-transform: uppercase; text-align: center;
   transition: background .15s, color .15s, transform .15s;
 }
 .zone small { font: 400 12px/16px var(--serif); letter-spacing: 0; text-transform: none; opacity: .85; }
-.zone.over { background: var(--terra); color: #fff; transform: scale(1.03); border-style: solid; }
+.zone.over { background: var(--terra); color: var(--paper); transform: scale(1.03); border-style: solid; }
 .phone.holding .active { animation: pulse 1s ease-in-out infinite; }
 @keyframes pulse { 50% { border-color: var(--terra); } }
 
 /* sheets */
-.scrim { position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; background: rgba(30, 37, 43, .38); }
+.scrim { position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-end; background: rgba(16, 15, 15, .38); }
 .sheet { width: 100%; max-height: 82%; overflow-y: auto; box-sizing: border-box; padding: 18px 16px 20px; background: var(--paper); border-radius: 18px 18px 0 0; animation: rise .25s cubic-bezier(.2, .7, .2, 1); }
 @keyframes rise { from { transform: translateY(24px); opacity: 0; } }
 .sheet h2 { margin: 0 0 12px; color: var(--terra); font: 700 12px/16px var(--sans); letter-spacing: .12em; text-transform: uppercase; }
 .quote { margin: 0 0 14px; padding: 8px 10px; background: var(--tint); border-left: 4px solid var(--terra); border-radius: 4px; font-size: 14px; line-height: 21px; }
 .modes { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
 .pill { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--terra); color: var(--terra); font: 700 12px/16px var(--sans); letter-spacing: .04em; }
-.pill[aria-pressed="true"], .pill.primary { background: var(--terra); color: #fff; }
+.pill[aria-pressed="true"], .pill.primary { background: var(--terra); color: var(--paper); }
 .pill:disabled { opacity: .4; cursor: default; }
 .answer { min-height: 78px; margin: 0 0 14px; font-size: 17px; line-height: 26px; }
 .row { display: flex; flex-wrap: wrap; gap: 8px; }
