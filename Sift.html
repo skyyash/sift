@@ -87,13 +87,13 @@ button:focus-visible, .seek:focus-visible { outline: 2px solid var(--terra); out
 .active {
   box-sizing: border-box;
   height: clamp(150px, 24vh, 200px);
-  display: flex; align-items: center;
+  display: flex; align-items: flex-start;
   border-block: 1px dashed var(--rule);
   padding: 10px 4px;
   overflow-y: auto; scrollbar-width: none;
 }
 .active::-webkit-scrollbar { display: none; }
-.active p { margin: auto 0; font-weight: 700; font-size: 29px; line-height: 38px; color: var(--ink); text-wrap: pretty; }
+.active p { margin: 0; font-weight: 700; font-size: 29px; line-height: 38px; color: var(--ink); text-wrap: pretty; }
 .active p.m { font-size: 24px; line-height: 32px; }
 .active p.l { font-size: 20px; line-height: 29px; }
 .active p.xl { font-size: 17px; line-height: 25px; }
