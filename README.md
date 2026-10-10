@@ -78,4 +78,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Reason*: Keep saving immediate and quiet without interrupting the reading surface with a notification pill.
 - [x] **Task 2.12: Brand identity & icon redesign (Concept 2: The Horizon Sifter)**
   - *Outcome*: Replaced generic 3-line filter icon with Concept 2 ("The Horizon Sifter")—stacked perspective reading cards sifting down to a glowing focus sentence horizon. Generated high-res assets, `icons/icon.svg`, multi-size PNGs (16, 32, 48, 96, 128), `SIFT.png`, `SIFT.ico`, and updated `manifest.json`.
+- [x] **Task 2.13: Flexoki theme harmonization for brand assets & icon**
+  - *Outcome*: Harmonized the logo and icon system with `Sift.html`'s Flexoki dark palette: stage/paper dark tones (`#100F0F`, `#1C1B1A`, `#282726`, `#403E3C`), subtle reading sheet outlines, and Flexoki cyan (`#3AA99F` / `#143F3C`) for the glowing active horizon line. Re-exported SVG, PNG sizes, and favicon.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
