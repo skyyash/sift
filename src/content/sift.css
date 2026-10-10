@@ -477,24 +477,4 @@
     border-radius: 22px;
   }
 }
-/* Launcher pill. Lives outside the overlay so it survives while reading. */
-#sift-fab {
-  position: fixed;
-  right: 16px;
-  bottom: 16px;
-  z-index: 2147483646;
-  min-height: 44px;
-  padding: 0 18px;
-  border: 0;
-  border-radius: 999px;
-  background: #3AA99F;
-  color: #1C1B1A;
-  font: 700 12px/44px "Arial", "Helvetica Neue", system-ui, sans-serif;
-  letter-spacing: .12em;
-  cursor: pointer;
-  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, .6);
-  -webkit-tap-highlight-color: transparent;
-}
-#sift-fab[hidden] {
-  display: none !important;
-}
+/* Launcher pill removed: the toolbar popup is the only entry point. */

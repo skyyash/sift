@@ -49,7 +49,7 @@
   const activeText = $("sift-active-text"), hintMsg = $("sift-hint-msg"), countEl = $("sift-count");
   const bar = $("sift-bar"), phone = $("sift-phone"), seekEl = $("sift-seek");
   const drawer = $("sift-drawer"), dlist = $("sift-dlist"), scrim = $("sift-scrim");
-  const toastEl = $("sift-toast"), fab = $("sift-fab");
+  const toastEl = $("sift-toast");
 
   function buildOverlay() {
     const host = document.createElement("div");
@@ -95,11 +95,6 @@
       "</dl></section></div>" +
       '<div class="sift-toast" id="sift-toast" role="status"></div></div>';
     document.documentElement.appendChild(host);
-    const launcher = document.createElement("button");
-    launcher.id = "sift-fab";
-    launcher.textContent = "SIFT";
-    launcher.setAttribute("aria-label", "Open Sift reading view");
-    document.documentElement.appendChild(launcher);
     return host;
   }
 
@@ -359,7 +354,6 @@
     if (next && !S.length) { loadDocument(); render(); scrollEnd(true); }
     open = next;
     root.hidden = !open;
-    fab.hidden = open;
     if (open) {
       restore(() => { if (alive()) { applySettingsToReader(); render(); scrollEnd(true); } });
     }
@@ -442,7 +436,6 @@
 
   $("sift-info").addEventListener("click", () => showSheet("guide"));
   $("sift-close").addEventListener("click", () => setOpen(false));
-  fab.addEventListener("click", () => setOpen(true));
   $("sift-copy").addEventListener("click", () => {
     if (!scratch.length) { toast("Nothing to copy yet"); return; }
     const text = scratch.slice().reverse()

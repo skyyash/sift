@@ -89,4 +89,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Expanded `test/test-page.html` into a 5-paragraph article matching the sample narrative so the live parsing path is exercised over HTTP.
 - [x] **Task 2.17: Icon refresh from new logo**
   - *Outcome*: Regenerated `icons/icon-16/32/48/96/128.png` from `SIFT.png` (1200x1200 source). Manifest references unchanged.
+- [x] **Task 2.18: Popup-only entry flow**
+  - *Outcome*: Removed the on-page SIFT launcher pill. Flow is now extension button to popup, book button sends `sift-toggle`, reader overlay opens on the active page. Close stays via the header button and Escape.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
