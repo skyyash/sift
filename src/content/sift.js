@@ -72,8 +72,6 @@
       "<div><dt>Slide</dt><dd>Drag left or right to move through the article one word at a time.</dd></div>" +
       "<div><dt>Scroll up</dt><dd>Scroll the text you have already read.</dd></div>" +
       "<div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>" +
-      "<div><dt>Tap saved</dt><dd>Jump the reader to that sentence.</dd></div>" +
-      "<div><dt>Double-tap saved</dt><dd>Highlight that sentence in the reader.</dd></div>" +
       "</dl></section></div>" +
       '<div class="sift-toast" id="sift-toast" role="status"></div></div>';
     document.documentElement.appendChild(host);
@@ -226,7 +224,6 @@
     scratch.forEach((c) => {
       const d = document.createElement("div");
       d.className = "sift-chip";
-      d.dataset.sid = String(c.id);
       const b = document.createElement("div");
       b.className = "sift-body";
       if (c.type === "ai") {
@@ -253,85 +250,6 @@
       dlist.appendChild(d);
     });
   }
-
-  // Scratchpad chips drive the reader: tap (or horizontal scribble)
-  // jumps to the saved sentence, double-tap highlights it in place.
-  // Saved indexes can go stale across pages, so resolve by index only
-  // when the text still matches, else fall back to a text search.
-  function resolveIdx(c) {
-    if (c && typeof c.idx === "number" && S[c.idx] &&
-      (S[c.idx].t === c.text || (c.src && c.src === title))) return c.idx;
-    if (c && typeof c.text === "string") {
-      const i = S.findIndex((s) => s.t === c.text);
-      if (i >= 0) return i;
-    }
-    return -1;
-  }
-
-  function pulseActive() {
-    if (!rm && activeEl.animate) activeEl.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 140, easing: "ease-out" });
-  }
-
-  function locateSentence(c) {
-    const i = resolveIdx(c);
-    if (i < 0) { toast("Sentence isn't on this page"); return; }
-    wordSeek = null;
-    setIdx(i, true);
-    pulseActive();
-    vibrate(8);
-  }
-
-  function highlightSentence(c) {
-    const i = resolveIdx(c);
-    if (i < 0) { toast("Sentence isn't on this page"); return; }
-    wordSeek = null;
-    idx = i;
-    if (hl.has(i)) hl.delete(i); else hl.add(i);
-    render();
-    scrollEnd(true);
-    vibrate(14);
-  }
-
-  let chipGesture = null, lastChipTap = null;
-  dlist.addEventListener("pointerdown", (e) => {
-    if (e.button > 0) return;
-    if (e.target.closest && e.target.closest(".sift-rm")) return;
-    if (e.isPrimary === false) return;
-    const chip = e.target.closest && e.target.closest(".sift-chip");
-    if (!chip) return;
-    const c = scratch.find((y) => y.id === Number(chip.dataset.sid));
-    if (!c) return;
-    chipGesture = { id: e.pointerId, x: e.clientX, y: e.clientY, c, moved: false, scribble: false };
-  });
-  window.addEventListener("pointermove", (e) => {
-    if (!chipGesture || e.pointerId !== chipGesture.id) return;
-    const dx = e.clientX - chipGesture.x, dy = e.clientY - chipGesture.y;
-    if (!chipGesture.moved && Math.hypot(dx, dy) > 12) {
-      chipGesture.moved = true;
-      chipGesture.scribble = Math.abs(dx) > Math.abs(dy) * 1.3;
-    }
-  });
-  window.addEventListener("pointerup", (e) => {
-    if (!chipGesture || e.pointerId !== chipGesture.id) return;
-    const gesture = chipGesture;
-    chipGesture = null;
-    if (e.target.closest && e.target.closest(".sift-rm")) return;
-    const sel = window.getSelection();
-    if (sel && !sel.isCollapsed) return; // text selection, not a gesture
-    if (gesture.scribble) { locateSentence(gesture.c); return; }
-    if (gesture.moved) return;
-    const now = performance.now();
-    if (lastChipTap && lastChipTap.id === gesture.c.id && now - lastChipTap.t < 320) {
-      lastChipTap = null;
-      highlightSentence(gesture.c);
-      return;
-    }
-    lastChipTap = { id: gesture.c.id, t: now };
-    locateSentence(gesture.c);
-  });
-  window.addEventListener("pointercancel", (e) => {
-    if (chipGesture && e.pointerId === chipGesture.id) chipGesture = null;
-  });
 
   function scrollEnd(instant) {
     requestAnimationFrame(() => {
@@ -472,20 +390,47 @@
     } catch (e) {}
   }
 
-  // Gestures on the reading area: double-tap saves, slide seeks by word.
-  stream.addEventListener("contextmenu", (e) => e.preventDefault());
-  stream.addEventListener("pointerdown", (e) => {
-    if (e.button > 0 || !scrim.hidden) return;
-    try { stream.setPointerCapture(e.pointerId); } catch (err) {}
-    g = {
-      x: e.clientX, y: e.clientY, start: idx,
-      startWord: wordSeek && wordSeek.idx === idx ? wordSeek.word : 0,
-      target: { idx, word: 0 }, moved: false, scrub: null
-    };
-    g.target.word = g.startWord;
-  });
-  stream.addEventListener("pointermove", (e) => {
+  // Reading gestures: double-tap saves the active sentence, horizontal
+  // slide seeks by word. Bound to the stream and to the scratchpad drawer,
+  // which is part of the reading surface. Chips stay inert: presses on
+  // buttons opt out, and an in-progress text selection aborts the gesture.
+  function endScrub() { root.classList.remove("sift-scrubbing"); }
+  function revertReadingGesture(s) {
+    endScrub();
+    idx = s.start;
+    wordSeek = { idx: s.start, word: s.startWord };
+    render();
+    scrollEnd(true);
+  }
+  function cancelReadingGesture() {
     if (!g) return;
+    const s = g;
+    g = null;
+    if (!s.scrub && idx === s.start) { endScrub(); return; }
+    revertReadingGesture(s);
+  }
+  function hasSelection() {
+    const sel = window.getSelection();
+    return !!(sel && !sel.isCollapsed);
+  }
+  function bindReadingGestures(el, capture) {
+    el.addEventListener("contextmenu", (e) => e.preventDefault());
+    el.addEventListener("pointerdown", (e) => {
+      if (e.button > 0 || !scrim.hidden) return;
+      if (e.isPrimary === false) return;
+      if (e.target.closest && e.target.closest("button")) return;
+      if (capture) { try { el.setPointerCapture(e.pointerId); } catch (err) {} }
+      g = {
+        id: e.pointerId, x: e.clientX, y: e.clientY, start: idx,
+        startWord: wordSeek && wordSeek.idx === idx ? wordSeek.word : 0,
+        target: { idx, word: 0 }, moved: false, scrub: null
+      };
+      g.target.word = g.startWord;
+    });
+  }
+  window.addEventListener("pointermove", (e) => {
+    if (!g || e.pointerId !== g.id) return;
+    if (hasSelection()) { cancelReadingGesture(); return; }
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (!g.moved && Math.hypot(dx, dy) > 10) {
       g.moved = true;
@@ -499,25 +444,22 @@
       else { wordSeek = target; renderActive(); }
     }
   });
-  function endScrub() { root.classList.remove("sift-scrubbing"); }
-  stream.addEventListener("pointerup", () => {
-    if (!g) return;
+  window.addEventListener("pointerup", (e) => {
+    if (!g || e.pointerId !== g.id) return;
     const s = g;
     g = null;
+    if (hasSelection()) {
+      if (s.scrub || idx !== s.start) revertReadingGesture(s);
+      else endScrub();
+      return;
+    }
     if (s.scrub) { wordSeek = s.target; renderActive(); endScrub(); return; }
     if (s.moved) return;
     onDoubleTap();
   });
-  stream.addEventListener("pointercancel", () => {
-    if (g) {
-      idx = g.start;
-      wordSeek = { idx: g.start, word: g.startWord };
-      render();
-      scrollEnd(true);
-      endScrub();
-      g = null;
-    }
-  });
+  window.addEventListener("pointercancel", cancelReadingGesture);
+  bindReadingGestures(stream, true);
+  bindReadingGestures(drawer, false);
 
   function seekFromX(e) {
     const r = seekEl.querySelector(".sift-progress").getBoundingClientRect();

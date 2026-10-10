@@ -263,6 +263,7 @@
   overflow: hidden;
   opacity: .5;
   transition: opacity .3s;
+  touch-action: pan-y;
 }
 #sift-root .sift-drawer.sift-flash {
   opacity: .95;
@@ -308,7 +309,6 @@
   user-select: text;
   -webkit-user-select: text;
   touch-action: pan-y;
-  cursor: pointer;
 }
 #sift-root .sift-chip .sift-body {
   flex: 1;

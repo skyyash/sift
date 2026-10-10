@@ -104,4 +104,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Reference*: Open/extract/theme flow studied in `obsidian-clipper` (`utils/reader.ts` shell plus `obsidian-reader-active`, Defuddle parse in `utils/clip-utils.ts`, `!important`-heavy `reader.scss`/`highlighter.scss`). Defuddle itself deferred (no build step yet).
 - [x] **Task 2.24: Two-way scratchpad gestures**
   - *Outcome*: Scratchpad chips drive the reader. Tap or horizontal scribble jumps to the saved sentence, double-tap highlights it in place. Saved indexes resolve by index only when the text still matches, else by text search, else a toast. Text selection and the remove button are excluded from gestures. Guide sheet documents the new rows.
+- [x] **Task 2.25: Reading gestures work over the scratchpad**
+  - *Outcome*: Reverted chip tap actions from 2.24, chips are inert again. The shared gesture binder now covers the stream and the drawer, so double-tap saves and slide seeks work over the scratchpad too. Button presses opt out, text selection aborts, list scrolling is untouched.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
