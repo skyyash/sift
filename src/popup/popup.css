@@ -1,0 +1,317 @@
+/* Sift popup styles. Ported from the Sift Popup.html mockup.
+   The popup document is isolated, so no host-page scoping is needed.
+   Single Flexoki dark theme by design choice. */
+:root {
+  --stage: #100F0F;
+  --paper: #1C1B1A;
+  --card: #282726;
+  --terra: #3AA99F;
+  --tint: #143F3C;
+  --slate: #878580;
+  --ink: #CECDC3;
+  --rule: #343331;
+  --hair: #403E3C;
+  --sans: "Arial", "Helvetica Neue", system-ui, sans-serif;
+  --serif: "Georgia", "Times New Roman", serif;
+  color-scheme: dark;
+}
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 360px;
+  height: 540px;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--serif);
+}
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+button:focus-visible {
+  outline: 2px solid var(--terra);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+.popup {
+  position: relative;
+  height: 540px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--paper);
+}
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 14px 8px;
+}
+.brand {
+  color: var(--terra);
+  font: 700 14px/18px var(--sans);
+  letter-spacing: .12em;
+}
+.doc {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 32px;
+  color: var(--slate);
+  font: 700 13px/16px var(--sans);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+.doc span.t {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.drawer {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  overflow: hidden;
+}
+.dhead {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding-inline: 10px 4px;
+}
+.ib {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  color: var(--terra);
+  border-radius: 8px;
+}
+.brandgroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.ib.sm {
+  width: 32px;
+  height: 32px;
+}
+.dhead .ib {
+  width: 32px;
+  height: 32px;
+}
+.dhead .ib svg {
+  width: 16px;
+  height: 16px;
+}
+.ib[aria-pressed="true"] {
+  background: var(--tint);
+}
+.dlist {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 2px 10px 10px;
+  opacity: .6;
+  scrollbar-width: thin;
+  scrollbar-color: var(--hair) transparent;
+}
+.chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 4px 8px 10px;
+  background: var(--tint);
+  border-left: 4px solid var(--terra);
+  border-radius: 4px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.chip .body {
+  flex: 1;
+  min-width: 0;
+}
+.chip p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 21px;
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+.chip .src {
+  display: block;
+  margin-top: 4px;
+  color: var(--slate);
+  font: 700 10px/14px var(--sans);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.chip .tag {
+  display: inline-block;
+  margin-bottom: 2px;
+  padding: 1px 6px;
+  border-radius: 3px;
+  background: var(--terra);
+  color: var(--paper);
+  font: 700 9px/14px var(--sans);
+  letter-spacing: .12em;
+}
+.chip .rm {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: var(--slate);
+  font: 400 20px/1 var(--sans);
+  border-radius: 6px;
+}
+.empty {
+  margin: 0;
+  padding: 28px 16px;
+  color: var(--slate);
+  font-size: 14px;
+  line-height: 21px;
+  text-align: center;
+}
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  animation: slide .22s cubic-bezier(.2, .7, .2, 1);
+}
+@keyframes slide {
+  from { transform: translateX(24px); opacity: 0; }
+}
+.phead {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px 4px 8px;
+}
+.phead h2 {
+  margin: 0;
+  color: var(--terra);
+  font: 700 12px/16px var(--sans);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+.pbody {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 14px 14px;
+}
+.set {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-bottom: 1px dashed var(--rule);
+}
+.set:last-child {
+  border-bottom: 0;
+}
+.set .lbl {
+  min-width: 0;
+}
+.set .lbl b {
+  display: block;
+  font: 700 13px/18px var(--sans);
+  color: var(--ink);
+}
+.set .lbl span {
+  display: block;
+  margin-top: 2px;
+  font: 400 12px/17px var(--sans);
+  color: var(--slate);
+}
+.seg {
+  display: flex;
+  flex-shrink: 0;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.seg button {
+  min-width: 40px;
+  min-height: 32px;
+  padding: 0 10px;
+  color: var(--slate);
+  font: 700 12px/16px var(--sans);
+}
+.seg button + button {
+  border-left: 1px solid var(--hair);
+}
+.seg button[aria-pressed="true"] {
+  background: var(--terra);
+  color: var(--paper);
+}
+.sample {
+  margin: 8px 0 0;
+  padding: 12px;
+  border: 1px dashed var(--rule);
+  border-radius: 8px;
+  font-weight: 700;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.sample.s {
+  font-size: 17px;
+  line-height: 25px;
+}
+.sample.m {
+  font-size: 24px;
+  line-height: 32px;
+}
+.sample.l {
+  font-size: 29px;
+  line-height: 38px;
+}
+.toast {
+  position: absolute;
+  left: 50%;
+  bottom: 22px;
+  z-index: 20;
+  transform: translate(-50%, 8px);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--paper);
+  font: 700 12px/16px var(--sans);
+  letter-spacing: .04em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s, transform .2s;
+}
+.toast.on {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
