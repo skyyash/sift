@@ -76,4 +76,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
 - [x] **Task 2.11: Quiet scratchpad feedback**
   - *Outcome*: Removed sentence-save toasts. New and duplicate saves now use a brief scratchpad opacity increase as the only feedback.
   - *Reason*: Keep saving immediate and quiet without interrupting the reading surface with a notification pill.
+- [x] **Task 2.12: Brand identity & icon redesign (Concept 2: The Horizon Sifter)**
+  - *Outcome*: Replaced generic 3-line filter icon with Concept 2 ("The Horizon Sifter")—stacked perspective reading cards sifting down to a glowing focus sentence horizon. Generated high-res assets, `icons/icon.svg`, multi-size PNGs (16, 32, 48, 96, 128), `SIFT.png`, `SIFT.ico`, and updated `manifest.json`.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
