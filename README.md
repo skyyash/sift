@@ -110,4 +110,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Active text uses `margin-top: auto`, so it sits at the bottom of its panel just above the scratchpad instead of leaving dead space. Overflowing long sentences still scroll from the top.
 - [x] **Task 2.27: Fix sentence-box scrolling on touch**
   - *Outcome*: Pointer capture now engages only once a horizontal scrub starts, so vertical touches scroll the sentence box and prior list natively instead of being swallowed. Verified by measurement: forced overflow collapses the anchor margin to zero and scroll reaches the last word.
+- [x] **Task 2.28: Auto-fit long sentences to the sentence box**
+  - *Outcome*: `renderActive` now steps the size class down (new `sift-xs` floor) until the sentence fits the fixed box, verified with the reported gwern chunk at phone width. Native scroll remains the backstop past the floor. Narrow screens also gain wider text padding.
 - [ ] **Task 2.3: Laying out the  plan of the extension.

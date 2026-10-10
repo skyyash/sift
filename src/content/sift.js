@@ -209,7 +209,23 @@
     });
     if (visible < words.length) inner.appendChild(document.createTextNode("…"));
     activeText.className = cur.t.length > 170 ? "sift-xl" : cur.t.length > 110 ? "sift-l" : cur.t.length > 60 ? "sift-m" : "";
+    fitActive();
     activeEl.scrollTop = 0;
+  }
+
+  // Shrink long sentences until they fit the fixed box, so words are never
+  // cut without recourse. Past the smallest size, native scroll is the backstop.
+  const FIT_ORDER = ["", "sift-m", "sift-l", "sift-xl", "sift-xs"];
+  function fitActive() {
+    let i = FIT_ORDER.indexOf(activeText.className);
+    if (i < 0) i = 0;
+    let guard = 0;
+    while (guard++ < FIT_ORDER.length &&
+      activeEl.scrollHeight > activeEl.clientHeight + 1 &&
+      i < FIT_ORDER.length - 1) {
+      i++;
+      activeText.className = FIT_ORDER[i];
+    }
   }
 
   function renderDrawer() {

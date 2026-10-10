@@ -234,6 +234,10 @@
   font-size: 17px;
   line-height: 25px;
 }
+#sift-root .sift-active p.sift-xs {
+  font-size: 15px;
+  line-height: 22px;
+}
 #sift-root .sift-hint {
   display: none;
   justify-content: space-between;
@@ -501,6 +505,9 @@
   }
   #sift-root .sift-phone {
     max-height: none;
+  }
+  #sift-root .sift-fixed {
+    padding: 8px 12px 12px;
   }
 }
 /* Host-page guard (clipper-style): page stylesheets must never recolor the
