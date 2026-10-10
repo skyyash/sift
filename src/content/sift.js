@@ -60,9 +60,9 @@
       '<header class="sift-top"><div class="sift-brandgroup"><span class="sift-brand">SIFT</span>' +
       '<button class="sift-ib" id="sift-info" aria-label="How gestures work">' +
       '<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="6.944" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 13.333v-3.333" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M10 6.667h0.008" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
-      "</button>" +
-      '<button class="sift-ib" id="sift-close" aria-label="Close Sift">×</button></div>' +
-      '<div class="sift-doc" aria-label="Current article"><span class="sift-t" id="sift-title"></span></div></header>' +
+      "</button></div>" +
+      '<div class="sift-doc" aria-label="Current article"><span class="sift-t" id="sift-title"></span></div>' +
+      '<button class="sift-ib" id="sift-close" aria-label="Close Sift">×</button></header>' +
       '<div class="sift-seek" id="sift-seek" hidden role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">' +
       '<div class="sift-progress"><i id="sift-bar"></i></div></div>' +
       '<main class="sift-stream" id="sift-stream" aria-label="Reading stream">' +
@@ -354,6 +354,7 @@
     if (next && !S.length) { loadDocument(); render(); scrollEnd(true); }
     open = next;
     root.hidden = !open;
+    applyThemeColor(open);
     if (open) {
       restore(() => { if (alive()) { applySettingsToReader(); render(); scrollEnd(true); } });
     }
@@ -367,6 +368,30 @@
         const speed = res && res[SETTINGS_KEY] && res[SETTINGS_KEY].speed;
         if (speed && WORD_STEPS[speed]) WORD_STEP = WORD_STEPS[speed];
       }).catch(() => {});
+    } catch (e) {}
+  }
+
+  // Keep the mobile browser chrome dark while reading by syncing the
+  // page theme-color with the overlay, restoring the original on close.
+  let prevThemeColor = null;
+  function applyThemeColor(on) {
+    try {
+      let meta = document.querySelector('meta[name="theme-color"]');
+      if (on) {
+        if (meta) {
+          if (!meta.hasAttribute("data-sift")) prevThemeColor = meta.getAttribute("content");
+          meta.setAttribute("content", "#100F0F");
+        } else if (document.head) {
+          meta = document.createElement("meta");
+          meta.setAttribute("name", "theme-color");
+          meta.setAttribute("content", "#100F0F");
+          meta.setAttribute("data-sift", "1");
+          document.head.appendChild(meta);
+        }
+      } else if (meta) {
+        if (meta.hasAttribute("data-sift")) meta.remove();
+        else if (prevThemeColor !== null) meta.setAttribute("content", prevThemeColor);
+      }
     } catch (e) {}
   }
 

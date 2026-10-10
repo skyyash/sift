@@ -20,6 +20,7 @@
   display: flex;
   justify-content: center;
   padding: 16px;
+  background: #100F0F;
   background: var(--stage);
   color: var(--ink);
   font-family: var(--serif);
@@ -81,6 +82,7 @@
 }
 #sift-root .sift-doc {
   display: flex;
+  flex: 1;
   align-items: center;
   gap: 6px;
   min-width: 0;
@@ -280,6 +282,10 @@
   width: 32px;
   height: 32px;
 }
+#sift-root #sift-close {
+  font: 400 22px/1 var(--sans);
+  color: var(--slate);
+}
 #sift-root .sift-dlist {
   flex: 1;
   min-height: 0;
@@ -476,3 +482,11 @@
   }
 }
 /* Launcher pill removed: the toolbar popup is the only entry point. */
+@media (max-width: 480px) {
+  #sift-root {
+    padding: 0;
+  }
+  #sift-root .sift-phone {
+    max-height: none;
+  }
+}

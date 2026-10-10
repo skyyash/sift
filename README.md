@@ -97,4 +97,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Added `[hidden] { display: none !important; }` resets to popup and reader CSS. The popup now opens on the scratchpad home, gear navigates to settings, Back returns home. Same bug hid the reader sheets incorrectly. Also restored the mockup's hidden seekbar (scrub seeking still works).
 - [x] **Task 2.21: Popup header, actions, and highlight cards**
   - *Outcome*: Removed the empty-list text. Title block fills the header gap with a 120px floor and truncates. Copy and read buttons sit at opposite ends. Saved highlights live in a drawer card mirroring the reading view, with per-item chips unchanged.
+- [x] **Task 2.22: Mobile header and theme hardening**
+  - *Outcome*: Close button moved to the right edge after the truncated title, with explicit sizing. Overlay gets a background fallback, full-bleed layout under 480px, and a reversible `theme-color` sync so the mobile browser chrome stays dark while reading.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
