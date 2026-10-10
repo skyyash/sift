@@ -24,6 +24,7 @@
   background: var(--stage);
   color: var(--ink);
   font-family: var(--serif);
+  font-size: 16px;
   box-sizing: border-box;
 }
 #sift-root[hidden] {
@@ -59,6 +60,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background: #1C1B1A;
   background: var(--paper);
   border-radius: 0;
   box-shadow: 0 24px 48px -24px rgba(0, 0, 0, .55);
@@ -344,6 +346,14 @@
   line-height: 21px;
   text-align: center;
 }
+#sift-root .sift-nopage {
+  margin: auto;
+  padding: 24px 20px;
+  color: var(--ink);
+  font-size: 17px;
+  line-height: 26px;
+  text-align: center;
+}
 #sift-root .sift-scrim {
   position: absolute;
   inset: 0;
@@ -489,4 +499,84 @@
   #sift-root .sift-phone {
     max-height: none;
   }
+}
+/* Host-page guard (clipper-style): page stylesheets must never recolor the
+   overlay. These win by specificity plus !important. */
+#sift-root {
+  background-color: #100F0F !important;
+  color: #CECDC3 !important;
+}
+#sift-root .sift-phone {
+  background-color: #1C1B1A !important;
+}
+#sift-root .sift-brand {
+  color: #3AA99F !important;
+}
+#sift-root .sift-doc {
+  color: #878580 !important;
+}
+#sift-root .sift-prior p {
+  color: #878580 !important;
+  background: transparent !important;
+}
+#sift-root .sift-active p {
+  color: #CECDC3 !important;
+  background: transparent !important;
+}
+#sift-root .sift-s.hl, #sift-root .sift-mark, #sift-root .sift-seek-word {
+  background-color: #143F3C !important;
+  color: #CECDC3 !important;
+}
+#sift-root .sift-hint {
+  color: #878580 !important;
+}
+#sift-root .sift-drawer {
+  background-color: #282726 !important;
+}
+#sift-root .sift-chip {
+  background-color: #143F3C !important;
+}
+#sift-root .sift-chip p {
+  color: #CECDC3 !important;
+  background: transparent !important;
+}
+#sift-root .sift-chip .sift-rm {
+  color: #878580 !important;
+}
+#sift-root .sift-sheet {
+  background-color: #1C1B1A !important;
+}
+#sift-root .sift-sheet h2 {
+  color: #3AA99F !important;
+}
+#sift-root .sift-quote {
+  background-color: #143F3C !important;
+}
+#sift-root .sift-pill {
+  color: #3AA99F !important;
+  border-color: #3AA99F !important;
+}
+#sift-root .sift-pill[aria-pressed="true"], #sift-root .sift-pill.sift-primary {
+  background-color: #3AA99F !important;
+  color: #1C1B1A !important;
+}
+#sift-root .sift-answer, #sift-root .sift-guide dd {
+  color: #CECDC3 !important;
+}
+#sift-root .sift-note {
+  color: #878580 !important;
+}
+#sift-root .sift-nopage {
+  color: #CECDC3 !important;
+  background: transparent !important;
+}
+#sift-root .sift-toast {
+  background-color: #CECDC3 !important;
+  color: #1C1B1A !important;
+}
+#sift-root .sift-ib {
+  color: #3AA99F !important;
+}
+#sift-root #sift-close {
+  color: #878580 !important;
 }

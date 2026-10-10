@@ -17,26 +17,6 @@
   const SETTINGS_KEY = "sift.settings";
   const WORD_STEPS = { slow: 22, normal: 14, fast: 8 };
 
-  const SAMPLE = [
-    [
-      ["The 6:42 bus is never late, but it is never quick either.", "The bus keeps to its schedule, yet the trip always takes a long time.", "Punctual, but slow."],
-      ["I used to spend the ride with my head down, reading one article start to finish and arriving with nothing to show for it.", "He read a whole article with his head down, then stepped off the bus remembering almost none of it.", "Heads-down reading left nothing behind."],
-      ["The problem was never the article.", "He is saying the writing was not what made reading hard.", "Not the article's fault."],
-      ["The problem was the screen, which handed me forty lines of text at once and punished me for looking up.", "The screen showed far too much text at once, and every glance away felt like a mistake.", "The screen was the real problem."]
-    ],
-    [
-      ["Every glance out the window cost me my place.", "Each time he looked outside, he lost track of where he had been reading.", "Looking away loses your place."],
-      ["A stop announcement, a sudden brake, or a stranger's elbow, and the paragraph I had been halfway through turned back into a grey wall.", "Small interruptions on a bus were enough to turn a half-read paragraph back into an unreadable block.", "Interruptions erase your place."],
-      ["I would scan for a familiar word, pick the wrong one, and start the whole block over.", "Having lost his spot, he hunted for a word he recognised, often picked the wrong one, and began the paragraph again.", "Finding your place again wastes time."]
-    ],
-    [
-      ["Reading in short steps changed that.", "Reading a small piece at a time fixed the problem.", "Small steps worked."],
-      ["One sentence at a time, large enough to read at arm's length, with everything I had already read resting quietly above it.", "Each sentence appears big enough to read at arm's length, and the earlier text stays visible above it.", "One big sentence, history above."],
-      ["When I looked away, nothing moved.", "Looking away no longer changed what was on the screen.", "Nothing moves while you look away."],
-      ["When I looked back, the sentence was still waiting.", "When his eyes returned, the same sentence was there to continue from.", "Your place is waiting."]
-    ]
-  ];
-
   let S = [], title = "", idx = 0, hl = new Set(), scratch = [], uid = 0;
   let advances = 0, lastTap = null, askIdx = 0, askMode = "ex", answerText = "", typer = null;
   let g = null, toastTimer = null, wordSeek = null, open = false, live = false;
@@ -84,7 +64,7 @@
       '<p class="sift-answer" id="sift-answer" aria-live="polite"></p>' +
       '<div class="sift-row"><button class="sift-pill sift-primary" id="sift-save-ans">Save to scratchpad</button>' +
       '<button class="sift-pill" data-close>Back to reading</button></div>' +
-      '<p class="sift-note">Prototype only. Replies are written in advance for the sample article. A real build would call a model running on the phone.</p></section>' +
+      '<p class="sift-note">Prototype only. A real build would call a model running on the phone.</p></section>' +
       '<section class="sift-sheet" id="sift-sh-guide" hidden aria-label="Info">' +
       '<button class="sift-sheet-close" data-close aria-label="Close info">×</button>' +
       "<h2>Info</h2>" +
@@ -103,15 +83,18 @@
       .map((x) => x.trim()).filter(Boolean);
   }
 
-  // Live article parse. Our own overlay nodes are excluded via #sift-root.
+  // Live article parse, clipper-style scoping: prefer article/main, skip
+  // site chrome, skip short fragments. Our own overlay is excluded.
   function parseLive() {
-    const scope = document.querySelector("article") || document.querySelector("main") || document.body;
+    const scope = document.querySelector("article") || document.querySelector("main") ||
+      document.querySelector('[role="main"]') || document.body;
     const h1 = document.querySelector("article h1, main h1, h1");
     const pageTitle = (h1 && !h1.closest("#sift-root") ? h1.textContent : document.title || "").trim();
     const paras = Array.from(scope.querySelectorAll("p"))
-      .filter((p) => !p.closest("#sift-root"))
+      .filter((p) => !p.closest("#sift-root") &&
+        !p.closest("header,footer,nav,aside,form,[role=navigation],[role=banner],[role=contentinfo]"))
       .map((p) => (p.textContent || "").replace(/\s+/g, " ").trim())
-      .filter((t) => t.length > 0);
+      .filter((t) => t.length >= 40);
     if (paras.length === 0) return null;
     const out = [];
     paras.forEach((ptxt, p) => {
@@ -121,25 +104,19 @@
     return { sentences: out, title: pageTitle || "Article" };
   }
 
-  function loadSample() {
-    S = [];
-    SAMPLE.forEach((para, p) => para.forEach((s) => S.push({ t: s[0], p, ex: s[1], sh: s[2] })));
-    title = "The Long Way Home";
-    idx = 3; advances = 0; lastTap = null; live = false;
-    hl = new Set([1, 2]);
-    scratch = [
-      { id: ++uid, type: "q", idx: 2, text: S[2].t, src: title },
-      { id: ++uid, type: "q", idx: 1, text: S[1].t, src: title }
-    ];
-  }
-
   function loadDocument() {
     const parsed = parseLive();
-    if (!parsed) { loadSample(); return; }
+    if (!parsed) {
+      S = []; title = ""; idx = 0; advances = 0; lastTap = null; live = false;
+      hl = new Set();
+      scratch = [];
+      return false;
+    }
     S = parsed.sentences; title = parsed.title;
     idx = 0; advances = 0; lastTap = null; live = true;
     hl = new Set();
     scratch = [];
+    return true;
   }
 
   function vibrate(n) { try { if (navigator.vibrate) navigator.vibrate(n); } catch (e) {} }
@@ -176,6 +153,9 @@
   }
 
   function render() {
+    if (!S.length) { renderNotice(); return; }
+    activeEl.hidden = false;
+    drawer.hidden = false;
     priorEl.replaceChildren();
     let para = null, lastP = -1;
     for (let i = 0; i < idx; i++) {
@@ -193,6 +173,21 @@
     $("sift-title").textContent = title;
     hintMsg.textContent = idx === S.length - 1 ? "End of article · " + scratch.length + " saved" : "";
     renderDrawer();
+  }
+
+  // No article text on this page: show a notice instead of dummy content.
+  function renderNotice() {
+    $("sift-title").textContent = "Sift";
+    priorEl.replaceChildren();
+    const n = document.createElement("p");
+    n.className = "sift-nopage";
+    n.textContent = "Sift couldn't find article text on this page. Open an article, then tap the book button again.";
+    priorEl.appendChild(n);
+    activeText.replaceChildren();
+    activeText.className = "";
+    bar.style.width = "0%";
+    activeEl.hidden = true;
+    drawer.hidden = true;
   }
 
   function renderActive() {
@@ -529,5 +524,5 @@
 
   loadDocument();
   render();
-  console.log("[Sift] reader ready:", S.length, "sentences,", live ? "live article" : "sample fallback");
+  console.log("[Sift] reader ready:", S.length, "sentences,", live ? "live article" : "no article text");
 })();

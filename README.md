@@ -99,4 +99,7 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Removed the empty-list text. Title block fills the header gap with a 120px floor and truncates. Copy and read buttons sit at opposite ends. Saved highlights live in a drawer card mirroring the reading view, with per-item chips unchanged.
 - [x] **Task 2.22: Mobile header and theme hardening**
   - *Outcome*: Close button moved to the right edge after the truncated title, with explicit sizing. Overlay gets a background fallback, full-bleed layout under 480px, and a reversible `theme-color` sync so the mobile browser chrome stays dark while reading.
+- [x] **Task 2.23: No-dummy extraction plus theme guard**
+  - *Outcome*: Removed the sample fallback. Pages without article text (search results) show a notice instead of dummy content. Extraction prefers article/main, skips site chrome and short fragments. Overlay colors now carry a clipper-style `!important` guard block so host stylesheets cannot recolor the reading view.
+  - *Reference*: Open/extract/theme flow studied in `obsidian-clipper` (`utils/reader.ts` shell plus `obsidian-reader-active`, Defuddle parse in `utils/clip-utils.ts`, `!important`-heavy `reader.scss`/`highlighter.scss`). Defuddle itself deferred (no build step yet).
 - [ ] **Task 2.3: Laying out the  plan of the extension.
