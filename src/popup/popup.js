@@ -87,8 +87,20 @@
 
   $("copyBtn").addEventListener("click", () => {
     if (!scratch.length) { toast("Nothing to copy yet"); return; }
-    const text = scratch.slice().reverse()
-      .map((c) => "“" + c.text + "”" + (c.src ? " — " + c.src : "")).join("\n\n");
+    const lines = [];
+    let lastKey = null;
+    scratch.slice().reverse().forEach((c) => {
+      const key = (c.src || "") + "\n" + (c.url || "");
+      if (key !== lastKey) {
+        if (lines.length) lines.push("");
+        lines.push(c.src || "Sift");
+        if (c.url) lines.push(c.url);
+        lines.push("");
+        lastKey = key;
+      }
+      lines.push("- " + c.text);
+    });
+    const text = lines.join("\n");
     const n = scratch.length;
     try {
       navigator.clipboard.writeText(text).then(
