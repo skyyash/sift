@@ -39,13 +39,7 @@
 
   function render() {
     dlist.replaceChildren();
-    if (!scratch.length) {
-      const e = document.createElement("p");
-      e.className = "empty";
-      e.textContent = "Nothing saved yet. Double-tap a sentence in the reading view and it lands here.";
-      dlist.appendChild(e);
-      return;
-    }
+    if (!scratch.length) return;
     scratch.forEach((c) => {
       const d = document.createElement("div");
       d.className = "chip";

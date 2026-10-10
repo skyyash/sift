@@ -95,4 +95,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Popup opens on the scratchpad view. Gear button next to SIFT opens the settings slide-over (text size, seek speed) on demand, per `Sift Popup.html`. Page title keeps a 120px floor and truncates. Reading view drops the hairline border and corner radius.
 - [x] **Task 2.20: Fix hidden-attribute override**
   - *Outcome*: Added `[hidden] { display: none !important; }` resets to popup and reader CSS. The popup now opens on the scratchpad home, gear navigates to settings, Back returns home. Same bug hid the reader sheets incorrectly. Also restored the mockup's hidden seekbar (scrub seeking still works).
+- [x] **Task 2.21: Popup header, actions, and highlight cards**
+  - *Outcome*: Removed the empty-list text. Title block fills the header gap with a 120px floor and truncates. Copy and read buttons sit at opposite ends. Saved highlights live in a drawer card mirroring the reading view, with per-item chips unchanged.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
