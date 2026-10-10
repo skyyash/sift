@@ -87,4 +87,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Ported `Sift Popup.html` into `src/popup/popup.html` plus `popup.css` and `popup.js`. Scratchpad list shares `sift.scratch` with the reader, copy works, settings persist `sift.settings` (size preview, seek speed read by the reader), book button toggles the reading view in the active tab. Wired as `action.default_popup` in `manifest.json`.
 - [x] **Task 2.16: Live-parse test fixture**
   - *Outcome*: Expanded `test/test-page.html` into a 5-paragraph article matching the sample narrative so the live parsing path is exercised over HTTP.
+- [x] **Task 2.17: Icon refresh from new logo**
+  - *Outcome*: Regenerated `icons/icon-16/32/48/96/128.png` from `SIFT.png` (1200x1200 source). Manifest references unchanged.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
