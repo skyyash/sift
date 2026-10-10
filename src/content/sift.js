@@ -503,7 +503,13 @@
   seekEl.addEventListener("pointercancel", endSeek);
 
   $("sift-info").addEventListener("click", () => showSheet("guide"));
+  // Both click and pointerup: if mobile click synthesis ever fails for this
+  // button, the pointer event still closes. setOpen(false) is idempotent.
   $("sift-close").addEventListener("click", () => setOpen(false));
+  $("sift-close").addEventListener("pointerup", (e) => {
+    if (e.button > 0) return;
+    setOpen(false);
+  });
   $("sift-copy").addEventListener("click", () => {
     if (!scratch.length) { toast("Nothing to copy yet"); return; }
     const text = scratch.slice().reverse()
