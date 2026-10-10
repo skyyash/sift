@@ -19,7 +19,7 @@ html, body {
   margin: 0;
   padding: 0;
   width: 360px;
-  height: 540px;
+  height: 100%;
   background: var(--paper);
   color: var(--ink);
   font-family: var(--serif);
@@ -43,7 +43,7 @@ button:focus-visible {
 }
 .popup {
   position: relative;
-  height: 540px;
+  height: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
