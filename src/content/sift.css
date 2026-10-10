@@ -56,8 +56,8 @@
   flex-direction: column;
   overflow: hidden;
   background: var(--paper);
-  border-radius: 28px;
-  box-shadow: 0 0 0 1px var(--hair), 0 24px 48px -24px rgba(0, 0, 0, .55);
+  border-radius: 0;
+  box-shadow: 0 24px 48px -24px rgba(0, 0, 0, .55);
 }
 #sift-root .sift-top {
   display: flex;
@@ -470,11 +470,6 @@
   #sift-root * {
     animation: none !important;
     transition: none !important;
-  }
-}
-@media (max-width: 440px) {
-  #sift-root .sift-phone {
-    border-radius: 22px;
   }
 }
 /* Launcher pill removed: the toolbar popup is the only entry point. */

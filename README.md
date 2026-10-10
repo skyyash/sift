@@ -91,6 +91,6 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Regenerated `icons/icon-16/32/48/96/128.png` from `SIFT.png` (1200x1200 source). Manifest references unchanged.
 - [x] **Task 2.18: Popup-only entry flow**
   - *Outcome*: Removed the on-page SIFT launcher pill. Flow is now extension button to popup, book button sends `sift-toggle`, reader overlay opens on the active page. Close stays via the header button and Escape.
-- [x] **Task 2.19: Scratchpad-only popup**
-  - *Outcome*: Removed the gear button and settings panel from the popup. It now shows only the header, copy and read actions, and the saved-excerpt list, matching the `Sift Popup.html` scratchpad view. Reader keeps default seek speed.
+- [x] **Task 2.19: Scratchpad-first popup with on-demand settings**
+  - *Outcome*: Popup opens on the scratchpad view. Gear button next to SIFT opens the settings slide-over (text size, seek speed) on demand, per `Sift Popup.html`. Page title keeps a 120px floor and truncates. Reading view drops the hairline border and corner radius.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
