@@ -24,6 +24,9 @@ html, body {
   color: var(--ink);
   font-family: var(--serif);
 }
+[hidden] {
+  display: none !important;
+}
 button {
   font: inherit;
   color: inherit;

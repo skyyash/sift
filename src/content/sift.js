@@ -63,7 +63,7 @@
       "</button>" +
       '<button class="sift-ib" id="sift-close" aria-label="Close Sift">×</button></div>' +
       '<div class="sift-doc" aria-label="Current article"><span class="sift-t" id="sift-title"></span></div></header>' +
-      '<div class="sift-seek" id="sift-seek" role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">' +
+      '<div class="sift-seek" id="sift-seek" hidden role="slider" tabindex="0" aria-label="Seek through article" aria-valuemin="1" aria-valuemax="1" aria-valuenow="1">' +
       '<div class="sift-progress"><i id="sift-bar"></i></div></div>' +
       '<main class="sift-stream" id="sift-stream" aria-label="Reading stream">' +
       '<div class="sift-priorwrap"><div class="sift-prior" id="sift-prior" aria-label="Already read"></div></div>' +

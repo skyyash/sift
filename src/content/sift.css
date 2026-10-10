@@ -28,6 +28,9 @@
 #sift-root[hidden] {
   display: none !important;
 }
+#sift-root [hidden] {
+  display: none !important;
+}
 #sift-root *, #sift-root *::before, #sift-root *::after {
   box-sizing: border-box;
 }
