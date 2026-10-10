@@ -307,6 +307,8 @@
   border-radius: 4px;
   user-select: text;
   -webkit-user-select: text;
+  touch-action: pan-y;
+  cursor: pointer;
 }
 #sift-root .sift-chip .sift-body {
   flex: 1;

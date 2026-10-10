@@ -72,6 +72,8 @@
       "<div><dt>Slide</dt><dd>Drag left or right to move through the article one word at a time.</dd></div>" +
       "<div><dt>Scroll up</dt><dd>Scroll the text you have already read.</dd></div>" +
       "<div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>" +
+      "<div><dt>Tap saved</dt><dd>Jump the reader to that sentence.</dd></div>" +
+      "<div><dt>Double-tap saved</dt><dd>Highlight that sentence in the reader.</dd></div>" +
       "</dl></section></div>" +
       '<div class="sift-toast" id="sift-toast" role="status"></div></div>';
     document.documentElement.appendChild(host);
@@ -217,13 +219,14 @@
     if (!scratch.length) {
       const e = document.createElement("p");
       e.className = "sift-empty";
-      e.textContent = "Nothing here yet. Double-tap a sentence and it lands here.";
+      e.textContent = "Double-tap to highlight";
       dlist.appendChild(e);
       return;
     }
     scratch.forEach((c) => {
       const d = document.createElement("div");
       d.className = "sift-chip";
+      d.dataset.sid = String(c.id);
       const b = document.createElement("div");
       b.className = "sift-body";
       if (c.type === "ai") {
@@ -250,6 +253,85 @@
       dlist.appendChild(d);
     });
   }
+
+  // Scratchpad chips drive the reader: tap (or horizontal scribble)
+  // jumps to the saved sentence, double-tap highlights it in place.
+  // Saved indexes can go stale across pages, so resolve by index only
+  // when the text still matches, else fall back to a text search.
+  function resolveIdx(c) {
+    if (c && typeof c.idx === "number" && S[c.idx] &&
+      (S[c.idx].t === c.text || (c.src && c.src === title))) return c.idx;
+    if (c && typeof c.text === "string") {
+      const i = S.findIndex((s) => s.t === c.text);
+      if (i >= 0) return i;
+    }
+    return -1;
+  }
+
+  function pulseActive() {
+    if (!rm && activeEl.animate) activeEl.animate([{ opacity: 0.35 }, { opacity: 1 }], { duration: 140, easing: "ease-out" });
+  }
+
+  function locateSentence(c) {
+    const i = resolveIdx(c);
+    if (i < 0) { toast("Sentence isn't on this page"); return; }
+    wordSeek = null;
+    setIdx(i, true);
+    pulseActive();
+    vibrate(8);
+  }
+
+  function highlightSentence(c) {
+    const i = resolveIdx(c);
+    if (i < 0) { toast("Sentence isn't on this page"); return; }
+    wordSeek = null;
+    idx = i;
+    if (hl.has(i)) hl.delete(i); else hl.add(i);
+    render();
+    scrollEnd(true);
+    vibrate(14);
+  }
+
+  let chipGesture = null, lastChipTap = null;
+  dlist.addEventListener("pointerdown", (e) => {
+    if (e.button > 0) return;
+    if (e.target.closest && e.target.closest(".sift-rm")) return;
+    if (e.isPrimary === false) return;
+    const chip = e.target.closest && e.target.closest(".sift-chip");
+    if (!chip) return;
+    const c = scratch.find((y) => y.id === Number(chip.dataset.sid));
+    if (!c) return;
+    chipGesture = { id: e.pointerId, x: e.clientX, y: e.clientY, c, moved: false, scribble: false };
+  });
+  window.addEventListener("pointermove", (e) => {
+    if (!chipGesture || e.pointerId !== chipGesture.id) return;
+    const dx = e.clientX - chipGesture.x, dy = e.clientY - chipGesture.y;
+    if (!chipGesture.moved && Math.hypot(dx, dy) > 12) {
+      chipGesture.moved = true;
+      chipGesture.scribble = Math.abs(dx) > Math.abs(dy) * 1.3;
+    }
+  });
+  window.addEventListener("pointerup", (e) => {
+    if (!chipGesture || e.pointerId !== chipGesture.id) return;
+    const gesture = chipGesture;
+    chipGesture = null;
+    if (e.target.closest && e.target.closest(".sift-rm")) return;
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) return; // text selection, not a gesture
+    if (gesture.scribble) { locateSentence(gesture.c); return; }
+    if (gesture.moved) return;
+    const now = performance.now();
+    if (lastChipTap && lastChipTap.id === gesture.c.id && now - lastChipTap.t < 320) {
+      lastChipTap = null;
+      highlightSentence(gesture.c);
+      return;
+    }
+    lastChipTap = { id: gesture.c.id, t: now };
+    locateSentence(gesture.c);
+  });
+  window.addEventListener("pointercancel", (e) => {
+    if (chipGesture && e.pointerId === chipGesture.id) chipGesture = null;
+  });
 
   function scrollEnd(instant) {
     requestAnimationFrame(() => {
