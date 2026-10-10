@@ -419,9 +419,11 @@
       if (e.button > 0 || !scrim.hidden) return;
       if (e.isPrimary === false) return;
       if (e.target.closest && e.target.closest("button")) return;
-      if (capture) { try { el.setPointerCapture(e.pointerId); } catch (err) {} }
+      // No capture here: grabbing the pointer on every touch would steal
+      // native scrolling from the sentence box and the prior list. Capture
+      // only once a horizontal scrub definitively starts (see move below).
       g = {
-        id: e.pointerId, x: e.clientX, y: e.clientY, start: idx,
+        id: e.pointerId, el, capture, captured: false, x: e.clientX, y: e.clientY, start: idx,
         startWord: wordSeek && wordSeek.idx === idx ? wordSeek.word : 0,
         target: { idx, word: 0 }, moved: false, scrub: null
       };
@@ -435,7 +437,13 @@
     if (!g.moved && Math.hypot(dx, dy) > 10) {
       g.moved = true;
       g.scrub = Math.abs(dx) > Math.abs(dy) * 1.2;
-      if (g.scrub) root.classList.add("sift-scrubbing");
+      if (g.scrub) {
+        root.classList.add("sift-scrubbing");
+        if (g.capture && !g.captured) {
+          g.captured = true;
+          try { g.el.setPointerCapture(g.id); } catch (err) {}
+        }
+      }
     }
     if (g.scrub) {
       const target = moveWord(g.start, g.startWord, Math.round(-dx / WORD_STEP));

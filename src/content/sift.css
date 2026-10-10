@@ -209,6 +209,7 @@
   padding: 10px 4px;
   overflow-y: auto;
   scrollbar-width: none;
+  touch-action: pan-y;
 }
 #sift-root .sift-active::-webkit-scrollbar {
   display: none;
