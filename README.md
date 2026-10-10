@@ -80,4 +80,11 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Replaced generic 3-line filter icon with Concept 2 ("The Horizon Sifter")—stacked perspective reading cards sifting down to a glowing focus sentence horizon. Generated high-res assets, `icons/icon.svg`, multi-size PNGs (16, 32, 48, 96, 128), `SIFT.png`, `SIFT.ico`, and updated `manifest.json`.
 - [x] **Task 2.13: Flexoki theme harmonization for brand assets & icon**
   - *Outcome*: Harmonized the logo and icon system with `Sift.html`'s Flexoki dark palette: stage/paper dark tones (`#100F0F`, `#1C1B1A`, `#282726`, `#403E3C`), subtle reading sheet outlines, and Flexoki cyan (`#3AA99F` / `#143F3C`) for the glowing active horizon line. Re-exported SVG, PNG sizes, and favicon.
+- [x] **Task 2.14: Reader overlay frontend (clipper-informed port)**
+  - *Outcome*: Ported `Sift.html` into `src/content/sift.js` plus scoped `src/content/sift.css` (`#sift-root`, FAB launcher, `sift-toggle`/`sift-ping` message router, generation guard). Live article parsing first with sample fallback; slide word-seek, double-tap save, copy, guide and simulated Ask sheets kept. Scratchpad persists to `storage.local`.
+  - *Reference*: Borrowed container isolation, loader restraint, and highlighter menu placement ideas from `obsidian-clipper` (`content-loader.ts`, `content.ts`, `highlighter.scss`, `reader.scss`, `manifest.firefox.json`).
+- [x] **Task 2.15: Popup frontend (clipper-informed port)**
+  - *Outcome*: Ported `Sift Popup.html` into `src/popup/popup.html` plus `popup.css` and `popup.js`. Scratchpad list shares `sift.scratch` with the reader, copy works, settings persist `sift.settings` (size preview, seek speed read by the reader), book button toggles the reading view in the active tab. Wired as `action.default_popup` in `manifest.json`.
+- [x] **Task 2.16: Live-parse test fixture**
+  - *Outcome*: Expanded `test/test-page.html` into a 5-paragraph article matching the sample narrative so the live parsing path is exercised over HTTP.
 - [ ] **Task 2.3: Laying out the  plan of the extension.
