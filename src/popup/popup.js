@@ -1,18 +1,15 @@
-/* Sift popup logic. Ported from the Sift Popup.html mockup and wired to
-   the live extension: scratchpad reads/writes storage.local under the
-   same key as the reader overlay, settings persist for the reader to
-   pick up, and the book button toggles the reading view in the tab. */
+/* Sift popup logic. Scratchpad view only: the list shares storage.local
+   with the reader overlay, copy works, and the book button toggles the
+   reading view in the active tab. */
 (function () {
   const ext = typeof browser !== "undefined" ? browser : chrome;
   const storage = ext && ext.storage && ext.storage.local ? ext.storage.local : null;
   const SCRATCH_KEY = "sift.scratch";
-  const SETTINGS_KEY = "sift.settings";
 
   const $ = (id) => document.getElementById(id);
-  const dlist = $("dlist"), toastEl = $("toast"), panel = $("panel");
+  const dlist = $("dlist"), toastEl = $("toast");
   let toastTimer = null;
   let scratch = [];
-  let settings = { size: "m", speed: "normal" };
 
   function storeGet(keys) {
     if (!storage) return Promise.resolve({});
@@ -81,16 +78,6 @@
     });
   }
 
-  function applySettingsUI() {
-    document.querySelectorAll(".seg").forEach((seg) => {
-      const key = seg.dataset.key;
-      seg.querySelectorAll("button").forEach((b) => {
-        b.setAttribute("aria-pressed", String(settings[key] === b.dataset.v));
-      });
-    });
-    $("sample").className = "sample " + (settings.size || "m");
-  }
-
   $("copyBtn").addEventListener("click", () => {
     if (!scratch.length) { toast("Nothing to copy yet"); return; }
     const text = scratch.slice().reverse()
@@ -120,23 +107,7 @@
     } catch (e) { toast("Open an article page first"); }
   });
 
-  $("settingBtn").addEventListener("click", () => { panel.hidden = false; $("backBtn").focus(); });
-  $("backBtn").addEventListener("click", () => { panel.hidden = true; $("settingBtn").focus(); });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && !panel.hidden) panel.hidden = true;
-  });
-
-  document.querySelectorAll(".seg").forEach((seg) => {
-    seg.querySelectorAll("button").forEach((b) => {
-      b.addEventListener("click", () => {
-        settings[seg.dataset.key] = b.dataset.v;
-        storeSet({ [SETTINGS_KEY]: settings });
-        applySettingsUI();
-      });
-    });
-  });
-
-  // Tab title in the header, scratchpad and settings from storage.
+  // Tab title in the header, scratchpad from storage.
   try {
     if (ext.tabs && ext.tabs.query) {
       Promise.resolve(ext.tabs.query({ active: true, currentWindow: true })).then((found) => {
@@ -145,10 +116,8 @@
       }).catch(() => {});
     }
   } catch (e) {}
-  storeGet([SCRATCH_KEY, SETTINGS_KEY]).then((res) => {
+  storeGet([SCRATCH_KEY]).then((res) => {
     if (Array.isArray(res[SCRATCH_KEY])) scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
-    if (res[SETTINGS_KEY] && typeof res[SETTINGS_KEY] === "object") settings = Object.assign(settings, res[SETTINGS_KEY]);
-    applySettingsUI();
     render();
   });
 })();
