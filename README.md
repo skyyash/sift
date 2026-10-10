@@ -116,4 +116,8 @@ Sift replaces chaotic vertical scrolling with a rhythmic, gesture-driven flow:
   - *Outcome*: Header icon buttons (info, close) grow from 32px to 40px. The close wiring itself verified working via a real click test (overlay hides); the small corner target was the likely on-device miss.
 - [x] **Task 2.30: Bulletproof reader close button**
   - *Outcome*: Close now listens to `pointerup` in addition to `click` (idempotent), so a tap closes even if mobile click synthesis fails. Header buttons and brand group are crush-proof (`flex-shrink: 0`) so a long title cannot squeeze the × target. Verified both paths hide the overlay.
+- [x] **Task 2.31: Constant-size scrub reveal**
+  - *Outcome*: Scrubbing keeps the popup text-size setting with no shrinking. Only the fitting slice around the current word shows (leading words trim, current word stays). Landed sentences still shrink-to-fit from the settings size. Verified live: 24px constant across a scrub, always fitting.
+- [x] **Task 2.32: Title, URL, bullets copy format**
+  - *Outcome*: Both copy buttons emit `title`, `url`, blank line, then `- highlight` bullets. Saved items now store the page URL; the popup groups mixed-article lists with a header per article. Verified format in node.
 - [ ] **Task 2.3: Laying out the  plan of the extension.

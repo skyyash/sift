@@ -21,6 +21,8 @@
   let advances = 0, lastTap = null, askIdx = 0, askMode = "ex", answerText = "", typer = null;
   let g = null, toastTimer = null, wordSeek = null, open = false, live = false;
   let WORD_STEP = WORD_STEPS.normal;
+  const SIZE_CLASS = { s: "sift-xl", m: "sift-m", l: "" };
+  let textSizeClass = SIZE_CLASS.m;
   const rm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const $ = (id) => document.getElementById(id);
@@ -145,8 +147,11 @@
           scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
           uid = scratch.reduce((m, c) => Math.max(m, c.id || 0), 0);
         }
-        const speed = res && res[SETTINGS_KEY] && res[SETTINGS_KEY].speed;
-        if (speed && WORD_STEPS[speed]) WORD_STEP = WORD_STEPS[speed];
+        const st = res && res[SETTINGS_KEY];
+        if (st) {
+          if (st.speed && WORD_STEPS[st.speed]) WORD_STEP = WORD_STEPS[st.speed];
+          if (st.size && SIZE_CLASS[st.size] !== undefined) textSizeClass = SIZE_CLASS[st.size];
+        }
         done();
       }).catch(done);
     } catch (e) { done(); }
@@ -200,21 +205,33 @@
       activeText.appendChild(inner);
     }
     const words = cur.t.match(/\S+\s*/g) || [cur.t];
-    const visible = wordSeek && wordSeek.idx === idx ? wordSeek.word + 1 : words.length;
+    const scrubbing = !!(wordSeek && wordSeek.idx === idx);
+    const visible = scrubbing ? wordSeek.word + 1 : words.length;
     words.slice(0, visible).forEach((text, i) => {
       const w = document.createElement("span");
-      w.className = wordSeek && wordSeek.idx === idx && wordSeek.word === i ? "sift-seek-word" : "";
+      w.className = scrubbing && wordSeek.word === i ? "sift-seek-word" : "";
       w.textContent = text;
       inner.appendChild(w);
     });
     if (visible < words.length) inner.appendChild(document.createTextNode("…"));
-    activeText.className = cur.t.length > 170 ? "sift-xl" : cur.t.length > 110 ? "sift-l" : cur.t.length > 60 ? "sift-m" : "";
-    fitActive();
+    activeText.className = textSizeClass;
+    if (scrubbing) trimToFit(inner);
+    else fitActive();
     activeEl.scrollTop = 0;
   }
 
-  // Shrink long sentences until they fit the fixed box, so words are never
-  // cut without recourse. Past the smallest size, native scroll is the backstop.
+  // During a scrub the size never changes: keep the current word visible
+  // and drop leading words until the visible slice fits the box.
+  function trimToFit(container) {
+    let guard = 0;
+    while (guard++ < 200 &&
+      activeEl.scrollHeight > activeEl.clientHeight + 1 &&
+      container.childNodes.length > 2) {
+      container.removeChild(container.firstChild);
+    }
+  }
+  // Shrink long landed sentences until they fit the fixed box.
+  // Past the smallest size, native scroll is the backstop.
   const FIT_ORDER = ["", "sift-m", "sift-l", "sift-xl", "sift-xs"];
   function fitActive() {
     let i = FIT_ORDER.indexOf(activeText.className);
@@ -316,7 +333,7 @@
     wordSeek = null;
     hl.add(i);
     if (!scratch.some((c) => c.type === "q" && c.idx === i && c.src === title)) {
-      scratch.unshift({ id: ++uid, type: "q", idx: i, text: S[i].t, src: title });
+      scratch.unshift({ id: ++uid, type: "q", idx: i, text: S[i].t, src: title, url: location.href });
     }
     persist();
     flashDrawer();
@@ -376,8 +393,11 @@
     try {
       const p = storage.get([SETTINGS_KEY]);
       Promise.resolve(p).then((res) => {
-        const speed = res && res[SETTINGS_KEY] && res[SETTINGS_KEY].speed;
-        if (speed && WORD_STEPS[speed]) WORD_STEP = WORD_STEPS[speed];
+        const st = res && res[SETTINGS_KEY];
+        if (st) {
+          if (st.speed && WORD_STEPS[st.speed]) WORD_STEP = WORD_STEPS[st.speed];
+          if (st.size && SIZE_CLASS[st.size] !== undefined) textSizeClass = SIZE_CLASS[st.size];
+        }
       }).catch(() => {});
     } catch (e) {}
   }
@@ -512,8 +532,8 @@
   });
   $("sift-copy").addEventListener("click", () => {
     if (!scratch.length) { toast("Nothing to copy yet"); return; }
-    const text = scratch.slice().reverse()
-      .map((c) => (c.type === "ai" ? "AI note: " + c.text : "“" + c.text + "”")).join("\n\n");
+    const text = title + "\n" + location.href + "\n\n" +
+      scratch.slice().reverse().map((c) => "- " + c.text).join("\n");
     try {
       navigator.clipboard.writeText(text).then(
         () => toast("Copied " + scratch.length + (scratch.length === 1 ? " item" : " items")),
@@ -531,7 +551,7 @@
     });
   });
   $("sift-save-ans").addEventListener("click", () => {
-    scratch.unshift({ id: ++uid, type: "ai", idx: askIdx, text: answerText, src: title });
+    scratch.unshift({ id: ++uid, type: "ai", idx: askIdx, text: answerText, src: title, url: location.href });
     persist();
     hideSheets();
     render();
