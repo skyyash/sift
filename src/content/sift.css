@@ -196,6 +196,12 @@
   background: var(--tint);
   border-radius: 3px;
   padding-inline: 2px;
+  color: var(--ink);
+  box-shadow: 0 0 0 1px var(--terra);
+}
+#sift-root .sift-word-dim {
+  opacity: 0.32;
+  transition: opacity 0.12s ease;
 }
 #sift-root .sift-fixed {
   flex-shrink: 0;
@@ -541,6 +547,9 @@
 #sift-root .sift-s.hl, #sift-root .sift-mark, #sift-root .sift-seek-word {
   background-color: #143F3C !important;
   color: #CECDC3 !important;
+}
+#sift-root .sift-word-dim {
+  opacity: 0.32 !important;
 }
 #sift-root .sift-hint {
   color: #878580 !important;

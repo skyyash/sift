@@ -197,6 +197,7 @@
 
   function renderActive() {
     const cur = S[idx];
+    if (!cur) return;
     activeText.replaceChildren();
     let inner = activeText;
     if (hl.has(idx)) {
@@ -204,30 +205,31 @@
       inner.className = "sift-mark";
       activeText.appendChild(inner);
     }
-    const words = cur.t.match(/\S+\s*/g) || [cur.t];
+    const words = wordsFor(idx);
     const scrubbing = !!(wordSeek && wordSeek.idx === idx);
-    const visible = scrubbing ? wordSeek.word + 1 : words.length;
-    words.slice(0, visible).forEach((text, i) => {
+    const activeWordIdx = scrubbing ? wordSeek.word : -1;
+
+    let activeSpan = null;
+    words.forEach((text, i) => {
       const w = document.createElement("span");
-      w.className = scrubbing && wordSeek.word === i ? "sift-seek-word" : "";
       w.textContent = text;
+      if (scrubbing) {
+        if (i === activeWordIdx) {
+          w.className = "sift-seek-word";
+          activeSpan = w;
+        } else if (i > activeWordIdx) {
+          w.className = "sift-word-dim";
+        }
+      }
       inner.appendChild(w);
     });
-    if (visible < words.length) inner.appendChild(document.createTextNode("…"));
-    activeText.className = textSizeClass;
-    if (scrubbing) trimToFit(inner);
-    else fitActive();
-    activeEl.scrollTop = 0;
-  }
 
-  // During a scrub the size never changes: keep the current word visible
-  // and drop leading words until the visible slice fits the box.
-  function trimToFit(container) {
-    let guard = 0;
-    while (guard++ < 200 &&
-      activeEl.scrollHeight > activeEl.clientHeight + 1 &&
-      container.childNodes.length > 2) {
-      container.removeChild(container.firstChild);
+    activeText.className = textSizeClass;
+    fitActive();
+    if (activeSpan) {
+      activeSpan.scrollIntoView({ block: "nearest", behavior: "auto" });
+    } else {
+      activeEl.scrollTop = 0;
     }
   }
   // Shrink long landed sentences until they fit the fixed box.
