@@ -15,7 +15,7 @@
   const storage = ext && ext.storage && ext.storage.local ? ext.storage.local : null;
   const SCRATCH_KEY = "sift.scratch";
   const SETTINGS_KEY = "sift.settings";
-  const WORD_STEPS = { slow: 22, normal: 14, fast: 8 };
+  const WORD_STEPS = { slow: 36, normal: 28, fast: 20 };
 
   let S = [], title = "", idx = 0, hl = new Set(), scratch = [], uid = 0;
   let advances = 0, lastTap = null, askIdx = 0, askMode = "ex", answerText = "", typer = null;
@@ -628,7 +628,7 @@
       g = {
         id: e.pointerId, el, capture, captured: false, x: e.clientX, y: e.clientY, start: idx,
         startWord: wordSeek && wordSeek.idx === idx ? wordSeek.word : 0,
-        target: { idx, word: 0 }, moved: false, scrub: null
+        target: { idx, word: 0 }, moved: false, scrub: null, trail: []
       };
       g.target.word = g.startWord;
     });
@@ -636,6 +636,8 @@
   window.addEventListener("pointermove", (e) => {
     if (!g || e.pointerId !== g.id) return;
     if (hasSelection()) { cancelReadingGesture(); return; }
+    g.trail.push({ x: e.clientX, t: performance.now() });
+    if (g.trail.length > 12) g.trail.shift();
     const dx = e.clientX - g.x, dy = e.clientY - g.y;
     if (!g.moved && Math.hypot(dx, dy) > 10) {
       g.moved = true;
@@ -655,6 +657,19 @@
       else { wordSeek = target; renderActive(); }
     }
   });
+  // Peel-off damping: the thumb contact patch shifts as it lifts, adding a
+  // few stray pixels after the hold. Settle on the position held ~90ms
+  // before release instead of the release point itself.
+  function settleScrubTarget(s, releaseX) {
+    const now = performance.now();
+    let settleX = releaseX;
+    if (s.trail) {
+      for (let i = s.trail.length - 1; i >= 0; i--) {
+        if (now - s.trail[i].t > 90) { settleX = s.trail[i].x; break; }
+      }
+    }
+    return moveWord(s.start, s.startWord, Math.round(-(settleX - s.x) / WORD_STEP));
+  }
   window.addEventListener("pointerup", (e) => {
     if (!g || e.pointerId !== g.id) return;
     const s = g;
@@ -664,7 +679,20 @@
       else endScrub();
       return;
     }
-    if (s.scrub) { wordSeek = s.target; renderActive(); endScrub(); return; }
+    if (s.scrub) {
+      if (Math.abs(e.clientX - s.x) < 12) {
+        // Sub-threshold: a tap with finger roll, never a deliberate scrub.
+        idx = s.start;
+        wordSeek = s.startWord === 0 ? null : { idx: s.start, word: s.startWord };
+        render();
+        endScrub();
+      } else {
+        wordSeek = settleScrubTarget(s, e.clientX);
+        renderActive();
+        endScrub();
+      }
+      return;
+    }
     if (s.moved) return;
     onDoubleTap();
   });
