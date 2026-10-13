@@ -146,6 +146,15 @@
         if (res && Array.isArray(res[SCRATCH_KEY])) {
           scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
           uid = scratch.reduce((m, c) => Math.max(m, c.id || 0), 0);
+          scratch.forEach((c) => {
+            if (c.type === "q" && (c.url === location.href || c.src === title)) {
+              const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
+              const e = typeof c.endIdx === "number" ? c.endIdx : c.idx;
+              if (typeof s === "number") {
+                for (let k = s; k <= (typeof e === "number" ? e : s); k++) hl.add(k);
+              }
+            }
+          });
         }
         const st = res && res[SETTINGS_KEY];
         if (st) {
@@ -276,7 +285,13 @@
       x.textContent = "×";
       x.addEventListener("click", () => {
         scratch = scratch.filter((y) => y.id !== c.id);
-        if (c.type === "q" && typeof c.idx === "number") hl.delete(c.idx);
+        if (c.type === "q") {
+          const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
+          const e = typeof c.endIdx === "number" ? c.endIdx : c.idx;
+          if (typeof s === "number") {
+            for (let k = s; k <= (typeof e === "number" ? e : s); k++) hl.delete(k);
+          }
+        }
         persist();
         render();
       });
@@ -334,9 +349,65 @@
   function drop(i) {
     wordSeek = null;
     hl.add(i);
-    if (!scratch.some((c) => c.type === "q" && c.idx === i && c.src === title)) {
-      scratch.unshift({ id: ++uid, type: "q", idx: i, text: S[i].t, src: title, url: location.href });
+
+    const curUrl = location.href;
+    const existing = scratch.find((c) => {
+      if (c.type !== "q" || (c.url && c.url !== curUrl && c.src !== title)) return false;
+      const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
+      const e = typeof c.endIdx === "number" ? c.endIdx : c.idx;
+      return i >= s && i <= e;
+    });
+
+    if (existing) {
+      flashDrawer();
+      vibrate([10, 30, 10]);
+      return;
     }
+
+    const prevChip = scratch.find((c) => {
+      if (c.type !== "q" || (c.url && c.url !== curUrl && c.src !== title)) return false;
+      const e = typeof c.endIdx === "number" ? c.endIdx : c.idx;
+      return e === i - 1;
+    });
+    const nextChip = scratch.find((c) => {
+      if (c.type !== "q" || (c.url && c.url !== curUrl && c.src !== title)) return false;
+      const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
+      return s === i + 1;
+    });
+
+    if (prevChip && nextChip && prevChip !== nextChip) {
+      const newStart = typeof prevChip.startIdx === "number" ? prevChip.startIdx : prevChip.idx;
+      const newEnd = typeof nextChip.endIdx === "number" ? nextChip.endIdx : nextChip.idx;
+      prevChip.startIdx = newStart;
+      prevChip.endIdx = newEnd;
+      prevChip.idx = newStart;
+      prevChip.text = S.slice(newStart, newEnd + 1).map((s) => s.t).join(" ");
+      scratch = scratch.filter((c) => c !== nextChip);
+    } else if (prevChip) {
+      const s = typeof prevChip.startIdx === "number" ? prevChip.startIdx : prevChip.idx;
+      prevChip.startIdx = s;
+      prevChip.endIdx = i;
+      prevChip.idx = s;
+      prevChip.text = S.slice(s, i + 1).map((x) => x.t).join(" ");
+    } else if (nextChip) {
+      const e = typeof nextChip.endIdx === "number" ? nextChip.endIdx : nextChip.idx;
+      nextChip.startIdx = i;
+      nextChip.endIdx = e;
+      nextChip.idx = i;
+      nextChip.text = S.slice(i, e + 1).map((x) => x.t).join(" ");
+    } else {
+      scratch.unshift({
+        id: ++uid,
+        type: "q",
+        idx: i,
+        startIdx: i,
+        endIdx: i,
+        text: S[i].t,
+        src: title,
+        url: curUrl
+      });
+    }
+
     persist();
     flashDrawer();
     render();
