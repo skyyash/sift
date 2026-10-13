@@ -13,6 +13,23 @@
   let toastTimer = null;
   let scratch = [];
   let settings = { size: "m", speed: "normal" };
+  let activeTabUrl = "", activeTabTitle = "";
+
+  function isCurrentTabItem(c) {
+    if (!c) return false;
+    if (c.url && activeTabUrl) {
+      const cleanA = c.url.split("#")[0].replace(/\/$/, "");
+      const cleanB = activeTabUrl.split("#")[0].replace(/\/$/, "");
+      if (cleanA === cleanB) return true;
+    }
+    if (c.src && activeTabTitle && c.src === activeTabTitle) return true;
+    return false;
+  }
+
+  function currentItems() {
+    if (!activeTabUrl && !activeTabTitle) return scratch;
+    return scratch.filter(isCurrentTabItem);
+  }
 
   function storeGet(keys) {
     if (!storage) return Promise.resolve({});
@@ -39,8 +56,15 @@
 
   function render() {
     dlist.replaceChildren();
-    if (!scratch.length) return;
-    scratch.forEach((c) => {
+    const items = currentItems();
+    if (!items.length) {
+      const e = document.createElement("p");
+      e.className = "empty";
+      e.textContent = "No highlights on this page";
+      dlist.appendChild(e);
+      return;
+    }
+    items.forEach((c) => {
       const d = document.createElement("div");
       d.className = "chip";
       const b = document.createElement("div");
@@ -86,22 +110,18 @@
   }
 
   $("copyBtn").addEventListener("click", () => {
-    if (!scratch.length) { toast("Nothing to copy yet"); return; }
-    const lines = [];
-    let lastKey = null;
-    scratch.slice().reverse().forEach((c) => {
-      const key = (c.src || "") + "\n" + (c.url || "");
-      if (key !== lastKey) {
-        if (lines.length) lines.push("");
-        lines.push(c.src || "Sift");
-        if (c.url) lines.push(c.url);
-        lines.push("");
-        lastKey = key;
-      }
+    const items = currentItems();
+    if (!items.length) { toast("Nothing to copy on this page"); return; }
+    const title = activeTabTitle || (items[0] && items[0].src) || "Sift";
+    const url = activeTabUrl || (items[0] && items[0].url) || "";
+    const lines = [title];
+    if (url) lines.push(url);
+    lines.push("");
+    items.slice().reverse().forEach((c) => {
       lines.push("- " + c.text);
     });
     const text = lines.join("\n");
-    const n = scratch.length;
+    const n = items.length;
     try {
       navigator.clipboard.writeText(text).then(
         () => toast("Copied " + n + (n === 1 ? " excerpt" : " excerpts")),
@@ -147,7 +167,16 @@
     if (ext.tabs && ext.tabs.query) {
       Promise.resolve(ext.tabs.query({ active: true, currentWindow: true })).then((found) => {
         const tab = found && found[0];
-        if (tab && tab.title) $("docTitle").textContent = tab.title.slice(0, 60);
+        if (tab) {
+          if (tab.title) {
+            activeTabTitle = tab.title;
+            $("docTitle").textContent = tab.title.slice(0, 60);
+          }
+          if (tab.url) {
+            activeTabUrl = tab.url;
+          }
+          render();
+        }
       }).catch(() => {});
     }
   } catch (e) {}

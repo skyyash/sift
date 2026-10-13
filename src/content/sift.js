@@ -147,7 +147,7 @@
           scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
           uid = scratch.reduce((m, c) => Math.max(m, c.id || 0), 0);
           scratch.forEach((c) => {
-            if (c.type === "q" && (c.url === location.href || c.src === title)) {
+            if (c.type === "q" && isCurrentPage(c)) {
               const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
               const e = typeof c.endIdx === "number" ? c.endIdx : c.idx;
               if (typeof s === "number") {
@@ -256,16 +256,27 @@
     }
   }
 
+  function isCurrentPage(c) {
+    if (!c) return false;
+    if (c.url && location.href) {
+      const cleanA = c.url.split("#")[0].replace(/\/$/, "");
+      const cleanB = location.href.split("#")[0].replace(/\/$/, "");
+      if (cleanA === cleanB) return true;
+    }
+    return !!(c.src && title && c.src === title);
+  }
+
   function renderDrawer() {
     dlist.replaceChildren();
-    if (!scratch.length) {
+    const pageItems = scratch.filter(isCurrentPage);
+    if (!pageItems.length) {
       const e = document.createElement("p");
       e.className = "sift-empty";
       e.textContent = "Double-tap to highlight";
       dlist.appendChild(e);
       return;
     }
-    scratch.forEach((c) => {
+    pageItems.forEach((c) => {
       const d = document.createElement("div");
       d.className = "sift-chip";
       const b = document.createElement("div");
@@ -626,12 +637,13 @@
     setOpen(false);
   });
   $("sift-copy").addEventListener("click", () => {
-    if (!scratch.length) { toast("Nothing to copy yet"); return; }
+    const pageItems = scratch.filter(isCurrentPage);
+    if (!pageItems.length) { toast("Nothing to copy on this page"); return; }
     const text = title + "\n" + location.href + "\n\n" +
-      scratch.slice().reverse().map((c) => "- " + c.text).join("\n");
+      pageItems.slice().reverse().map((c) => "- " + c.text).join("\n");
     try {
       navigator.clipboard.writeText(text).then(
-        () => toast("Copied " + scratch.length + (scratch.length === 1 ? " item" : " items")),
+        () => toast("Copied " + pageItems.length + (pageItems.length === 1 ? " item" : " items")),
         () => toast("Copy blocked here. Select the text instead."));
     } catch (err) { toast("Copy blocked here. Select the text instead."); }
   });

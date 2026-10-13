@@ -315,3 +315,12 @@ button:focus-visible {
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+.empty {
+  margin: auto;
+  padding: 24px 16px;
+  color: var(--slate);
+  font-size: 13px;
+  line-height: 20px;
+  text-align: center;
+}
