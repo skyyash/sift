@@ -345,8 +345,9 @@
 
   function onDoubleTap() {
     const now = performance.now();
-    if (lastTap && now - lastTap.t < 320) {
+    if (lastTap && now - lastTap.t < 350) {
       lastTap = null;
+      clearSelection();
       drop(idx);
       return;
     }
@@ -449,10 +450,31 @@
   }
   function hasSelection() {
     const sel = window.getSelection();
-    return !!(sel && !sel.isCollapsed);
+    if (!sel || sel.isCollapsed) return false;
+    const anchor = sel.anchorNode;
+    const parent = anchor && anchor.nodeType === 1 ? anchor : anchor && anchor.parentElement;
+    return !!(parent && parent.closest && parent.closest(".sift-chip .sift-body"));
+  }
+  function clearSelection() {
+    try {
+      const sel = window.getSelection();
+      if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    } catch (e) {}
   }
   function bindReadingGestures(el, capture) {
     el.addEventListener("contextmenu", (e) => e.preventDefault());
+    el.addEventListener("mousedown", (e) => {
+      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
+      if (e.detail > 1) e.preventDefault();
+    });
+    el.addEventListener("selectstart", (e) => {
+      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
+      e.preventDefault();
+    });
+    el.addEventListener("dblclick", (e) => {
+      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
+      e.preventDefault();
+    });
     el.addEventListener("pointerdown", (e) => {
       if (e.button > 0 || !scrim.hidden) return;
       if (e.isPrimary === false) return;
