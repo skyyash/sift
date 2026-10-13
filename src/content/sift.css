@@ -322,8 +322,9 @@
   background: var(--tint);
   border-left: 4px solid var(--terra);
   border-radius: 4px;
-  user-select: text;
-  -webkit-user-select: text;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
   touch-action: pan-y;
 }
 #sift-root .sift-chip .sift-body {
@@ -520,6 +521,13 @@
   #sift-root .sift-fixed {
     padding: 8px 12px 12px;
   }
+}
+/* Selection lockout: no native text selection anywhere in the overlay.
+   Copy flows through the copy buttons, never OS handles or bubbles. */
+#sift-root, #sift-root * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -webkit-touch-callout: none !important;
 }
 /* Host-page guard (clipper-style): page stylesheets must never recolor the
    overlay. These win by specificity plus !important. */

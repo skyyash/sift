@@ -602,10 +602,7 @@
   }
   function hasSelection() {
     const sel = window.getSelection();
-    if (!sel || sel.isCollapsed) return false;
-    const anchor = sel.anchorNode;
-    const parent = anchor && anchor.nodeType === 1 ? anchor : anchor && anchor.parentElement;
-    return !!(parent && parent.closest && parent.closest(".sift-chip .sift-body"));
+    return !!(sel && !sel.isCollapsed);
   }
   function clearSelection() {
     try {
@@ -613,24 +610,18 @@
       if (sel && sel.removeAllRanges) sel.removeAllRanges();
     } catch (e) {}
   }
+  // Complete selection lockout at the root: no native selection, handles,
+  // magnifiers, or copy bubbles anywhere in the overlay, chips included.
+  root.addEventListener("selectstart", (e) => e.preventDefault());
+  root.addEventListener("dblclick", (e) => e.preventDefault());
+  root.addEventListener("mousedown", (e) => { if (e.detail > 1) e.preventDefault(); });
   function bindReadingGestures(el, capture) {
     el.addEventListener("contextmenu", (e) => e.preventDefault());
-    el.addEventListener("mousedown", (e) => {
-      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
-      if (e.detail > 1) e.preventDefault();
-    });
-    el.addEventListener("selectstart", (e) => {
-      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
-      e.preventDefault();
-    });
-    el.addEventListener("dblclick", (e) => {
-      if (e.target.closest && e.target.closest(".sift-chip .sift-body")) return;
-      e.preventDefault();
-    });
     el.addEventListener("pointerdown", (e) => {
       if (e.button > 0 || !scrim.hidden) return;
       if (e.isPrimary === false) return;
       if (e.target.closest && e.target.closest("button")) return;
+      clearSelection();
       // No capture here: grabbing the pointer on every touch would steal
       // native scrolling from the sentence box and the prior list. Capture
       // only once a horizontal scrub definitively starts (see move below).
