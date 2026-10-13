@@ -80,41 +80,109 @@
     return host;
   }
 
-  function splitSentences(text) {
-    return (text.match(/[^.!?]+(?:[.!?]+["”’)]*|$)\s*/g) || [text])
-      .map((x) => x.trim()).filter(Boolean);
+  let parseFailureReason = "";
+
+  function findBestContentRoot() {
+    const isExcluded = (el) => {
+      if (!el || el.id === "sift-root" || el.closest("#sift-root")) return true;
+      return !!el.closest("header,footer,nav,aside,form,[role=navigation],[role=banner],[role=contentinfo]");
+    };
+
+    const candidates = [
+      ...Array.from(document.querySelectorAll("article")),
+      ...Array.from(document.querySelectorAll("main, [role='main']")),
+      ...Array.from(document.querySelectorAll(".post-content, .entry-content, .article-content, .article-body, .markdown-body, #content, .content"))
+    ].filter((el) => !isExcluded(el));
+
+    let bestEl = null, bestScore = 0;
+    for (const el of candidates) {
+      const pCount = el.querySelectorAll("p, li, blockquote").length;
+      const textLen = (el.textContent || "").trim().length;
+      const score = pCount * 120 + textLen;
+      if (score > bestScore) {
+        bestScore = score;
+        bestEl = el;
+      }
+    }
+    if (bestEl && bestScore > 150) return bestEl;
+    return document.body;
   }
 
-  // Live article parse, clipper-style scoping: prefer article/main, skip
-  // site chrome, skip short fragments. Our own overlay is excluded.
+  function splitSentences(text, isBlock) {
+    if (isBlock && (/^•\s/.test(text) || text.length < 80)) return [text.trim()];
+    return (text.match(/[^.!?]+(?:[.!?]+["”’)]*|$)\s*/g) || [text])
+      .map((x) => x.trim()).filter((x) => x.length >= 3);
+  }
+
+  // Clipper-style live article parse: candidate container scoring,
+  // ordered extraction of paragraphs, lists (ul/ol/li), blockquotes,
+  // and section headings, avoiding site chrome and nested duplicates.
   function parseLive() {
-    const scope = document.querySelector("article") || document.querySelector("main") ||
-      document.querySelector('[role="main"]') || document.body;
+    const scope = findBestContentRoot();
     const h1 = document.querySelector("article h1, main h1, h1");
     const pageTitle = (h1 && !h1.closest("#sift-root") ? h1.textContent : document.title || "").trim();
-    const paras = Array.from(scope.querySelectorAll("p"))
-      .filter((p) => !p.closest("#sift-root") &&
-        !p.closest("header,footer,nav,aside,form,[role=navigation],[role=banner],[role=contentinfo]"))
-      .map((p) => (p.textContent || "").replace(/\s+/g, " ").trim())
-      .filter((t) => t.length >= 40);
-    if (paras.length === 0) return null;
-    const out = [];
-    paras.forEach((ptxt, p) => {
-      splitSentences(ptxt).forEach((t) => out.push({ t, p, ex: null, sh: null }));
+
+    const isExcluded = (el) => {
+      if (!el || el.id === "sift-root" || el.closest("#sift-root")) return true;
+      return !!el.closest("header,footer,nav,aside,form,[role=navigation],[role=banner],[role=contentinfo],script,style,noscript,svg");
+    };
+
+    let rawBlocks = Array.from(scope.querySelectorAll("p, li, blockquote, h2, h3, h4"))
+      .filter((el) => !isExcluded(el));
+
+    rawBlocks = rawBlocks.filter((el) => {
+      if (el.tagName === "LI" && el.querySelector("p")) return false;
+      return true;
     });
-    if (out.length < 3) return null;
+
+    if (rawBlocks.length === 0) {
+      rawBlocks = Array.from(scope.querySelectorAll("div"))
+        .filter((el) => !isExcluded(el) && el.children.length === 0 && (el.textContent || "").trim().length >= 30);
+    }
+
+    if (rawBlocks.length === 0) {
+      return { error: "No readable paragraphs, lists, or headings found in main article area." };
+    }
+
+    const out = [];
+    rawBlocks.forEach((el, p) => {
+      let t = (el.textContent || "").replace(/\s+/g, " ").trim();
+      if (!t || t.length < 5) return;
+      const isLi = el.tagName === "LI";
+      if (isLi) {
+        const isOrdered = el.parentElement && el.parentElement.tagName === "OL";
+        const idxInParent = el.parentElement ? Array.from(el.parentElement.children).indexOf(el) + 1 : 1;
+        const prefix = isOrdered ? (idxInParent + ". ") : "• ";
+        if (!/^(\d+\.|•|-|\*)\s/.test(t)) t = prefix + t;
+      }
+      const isHeader = /^H[2-4]$/.test(el.tagName);
+      const isShortBlock = isLi || isHeader;
+      splitSentences(t, isShortBlock).forEach((sent) => {
+        out.push({ t: sent, p, ex: null, sh: null });
+      });
+    });
+
+    if (out.length < 2) {
+      return {
+        error: out.length === 0
+          ? "No readable text extracted from page."
+          : "Only 1 sentence found. Need at least 2 sentences for reading stream."
+      };
+    }
     return { sentences: out, title: pageTitle || "Article" };
   }
 
   function loadDocument() {
-    const parsed = parseLive();
-    if (!parsed) {
+    const res = parseLive();
+    if (!res || res.error) {
+      parseFailureReason = (res && res.error) || "Sift couldn't find article text on this page.";
       S = []; title = ""; idx = 0; advances = 0; lastTap = null; live = false;
       hl = new Set();
       scratch = [];
       return false;
     }
-    S = parsed.sentences; title = parsed.title;
+    parseFailureReason = "";
+    S = res.sentences; title = res.title;
     idx = 0; advances = 0; lastTap = null; live = true;
     hl = new Set();
     scratch = [];
@@ -193,9 +261,11 @@
   function renderNotice() {
     $("sift-title").textContent = "Sift";
     priorEl.replaceChildren();
-    const n = document.createElement("p");
+    const n = document.createElement("div");
     n.className = "sift-nopage";
-    n.textContent = "Sift couldn't find article text on this page. Open an article, then tap the book button again.";
+    n.innerHTML = "<strong style='display:block;margin-bottom:8px;font-size:16px;'>No Article Detected</strong>" +
+      "<p style='margin:0 0 10px;font-size:14px;opacity:.8;'>" + (parseFailureReason || "Sift couldn't find article text on this page.") + "</p>" +
+      "<span style='font-size:12px;opacity:.6;'>Open an article or documentation page, then tap the book button.</span>";
     priorEl.appendChild(n);
     activeText.replaceChildren();
     activeText.className = "";
