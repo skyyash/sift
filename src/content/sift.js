@@ -570,24 +570,114 @@
     return chip.id;
   }
 
-  // Slice 1 stub: canned text so routing, tiers, and rendering verify
-  // offline. Slice 2 replaces the body with the Gemini fetch.
+  const GEMINI_KEY = "geminiApiKey";
+  const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+  function aiPromptFor(level, articleTitle) {
+    if (level === 2) {
+      return "Provide a deeper explanation (3-4 sentences) of this sentence from the article ('" +
+        articleTitle + "'). Explain any industry jargon, metaphors, philosophical nuances, " +
+        "or unstated assumptions made by the author. Be precise and insightful.";
+    }
+    if (level === 3) {
+      return "Break down this sentence clause-by-clause. Explain the grammatical structure, " +
+        "core claim, conditions/caveats, and implications using bullet points:\n" +
+        "• Core Claim: ...\n• Condition/Nuance: ...\n• Implication: ...\n" +
+        "Keep it clean, compact, and analytical.";
+    }
+    return "In 1 to 2 clear, concise sentences, explain what the following sentence means " +
+      "in the context of this article ('" + articleTitle + "'). Focus on the author's " +
+      "primary argument or takeaway. No fluff, no introductory filler.";
+  }
+
+  function setAiChip(chipId, level, status, text) {
+    const live = scratch.find((c) => c.id === chipId);
+    if (!live || live.level !== level) return false; // Superseded by a newer tap.
+    live.status = status;
+    live.text = text;
+    persist();
+    render();
+    return true;
+  }
+
+  function getApiKey() {
+    if (!storage) return Promise.resolve("");
+    try {
+      return Promise.resolve(storage.get([GEMINI_KEY]))
+        .then((res) => (res && typeof res[GEMINI_KEY] === "string" ? res[GEMINI_KEY].trim() : ""))
+        .catch(() => "");
+    } catch (e) {
+      return Promise.resolve("");
+    }
+  }
+
+  function callGemini(model, apiKey, body) {
+    return fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent?key=" + encodeURIComponent(apiKey), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body)
+    }).then((res) => {
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      return res.json();
+    }).then((data) => {
+      const parts = data && data.candidates && data.candidates[0] &&
+        data.candidates[0].content && data.candidates[0].content.parts;
+      const text = Array.isArray(parts)
+        ? parts.map((p) => (p && p.text) || "").join("").trim()
+        : "";
+      if (!text) throw new Error("empty");
+      return text;
+    });
+  }
+
   function requestExplanation(i, level, key) {
     aiInflight.add(key);
     const chip = scratch.find((c) => c.type === "ai" && c.idx === i && isCurrentPage(c));
     const chipId = chip && chip.id;
-    setTimeout(() => {
-      aiInflight.delete(key);
-      if (!alive()) return;
-      const text = "[Stub " + AI_TAG[level] + "] Gemini wiring lands in slice 2.";
-      aiCache.set(key, text);
-      const live = scratch.find((c) => c.id === chipId);
-      if (!live || live.level !== level) return; // Superseded by a newer tap.
-      live.status = "ready";
-      live.text = text;
-      persist();
-      render();
-    }, 300);
+    const finish = () => aiInflight.delete(key);
+    if (typeof navigator !== "undefined" && navigator.onLine === false) {
+      finish();
+      setAiChip(chipId, level, "error", "Offline: AI explanation requires internet access.");
+      return;
+    }
+    getApiKey().then((apiKey) => {
+      if (!alive()) { finish(); return; }
+      if (!apiKey) {
+        finish();
+        setAiChip(chipId, level, "setup",
+          "Gemini API Key missing. Tap Settings in the Sift popup to paste your free Google AI Studio key.");
+        return;
+      }
+      const contextBefore = S.slice(Math.max(0, i - 2), i).map((s) => s.t).join(" ");
+      const targetSentence = S[i].t;
+      const contextAfter = S.slice(i + 1, Math.min(S.length, i + 3)).map((s) => s.t).join(" ");
+      const articleTitle = title || document.title;
+      const body = {
+        contents: [{
+          parts: [{
+            text: aiPromptFor(level, articleTitle) +
+              "\n\nArticle Title: " + articleTitle +
+              "\nContext: " + contextBefore + " [TARGET] " + targetSentence + " [/TARGET] " + contextAfter +
+              "\nTarget Sentence: " + targetSentence
+          }]
+        }],
+        generationConfig: { temperature: 0.3, maxOutputTokens: 300 }
+      };
+      const tryModel = (n) => callGemini(GEMINI_MODELS[n], apiKey, body).catch((err) => {
+        if (n + 1 < GEMINI_MODELS.length) return tryModel(n + 1);
+        throw err;
+      });
+      tryModel(0).then((text) => {
+        finish();
+        if (!alive()) return;
+        aiCache.set(key, text);
+        setAiChip(chipId, level, "ready", text);
+      }).catch(() => {
+        finish();
+        if (!alive()) return;
+        setAiChip(chipId, level, "error",
+          "Couldn't reach Gemini. Double-tap the drawer to retry.");
+      });
+    });
   }
 
   function onDoubleTap(origin) {
