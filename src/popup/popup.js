@@ -7,6 +7,9 @@
   const storage = ext && ext.storage && ext.storage.local ? ext.storage.local : null;
   const SCRATCH_KEY = "sift.scratch";
   const SETTINGS_KEY = "sift.settings";
+  const GEMINI_KEY = "geminiApiKey";
+  const AI_TAG = { 1: "AI · GIST", 2: "AI · DETAIL", 3: "AI · BREAKDOWN" };
+  const AI_NAME = { 1: "Gist", 2: "Detail", 3: "Breakdown" };
 
   const $ = (id) => document.getElementById(id);
   const dlist = $("dlist"), toastEl = $("toast"), panel = $("panel");
@@ -72,7 +75,10 @@
       if (c.type === "ai") {
         const tag = document.createElement("span");
         tag.className = "tag";
-        tag.textContent = "AI NOTE";
+        if (c.status === "loading") tag.textContent = "AI · THINKING...";
+        else if (c.status === "setup") tag.textContent = "AI · SETUP";
+        else if (c.status === "error") tag.textContent = "AI · ERROR";
+        else tag.textContent = AI_TAG[c.level] || "AI NOTE";
         b.appendChild(tag);
       }
       const p = document.createElement("p");
@@ -100,13 +106,26 @@
   }
 
   function applySettingsUI() {
-    document.querySelectorAll(".seg").forEach((seg) => {
+  $("saveKeyBtn").addEventListener("click", () => {
+    const v = ($("geminiKeyInput").value || "").trim();
+    storeSet({ [GEMINI_KEY]: v });
+    toast(v ? "Gemini key saved" : "Gemini key cleared");
+  });
+
+  document.querySelectorAll(".seg").forEach((seg) => {
       const key = seg.dataset.key;
       seg.querySelectorAll("button").forEach((b) => {
         b.setAttribute("aria-pressed", String(settings[key] === b.dataset.v));
       });
     });
     $("sample").className = "sample " + (settings.size || "m");
+  }
+
+  function formatCopyItem(c) {
+    if (c.type === "ai" && c.level && c.quote) {
+      return "> " + c.quote + "\n\n*AI Note (Level " + c.level + ": " + (AI_NAME[c.level] || "") + "): " + c.text + "*";
+    }
+    return "- " + c.text;
   }
 
   $("copyBtn").addEventListener("click", () => {
@@ -118,7 +137,7 @@
     if (url) lines.push(url);
     lines.push("");
     items.slice().reverse().forEach((c) => {
-      lines.push("- " + c.text);
+      lines.push(formatCopyItem(c));
     });
     const text = lines.join("\n");
     const n = items.length;
@@ -180,9 +199,10 @@
       }).catch(() => {});
     }
   } catch (e) {}
-  storeGet([SCRATCH_KEY, SETTINGS_KEY]).then((res) => {
+  storeGet([SCRATCH_KEY, SETTINGS_KEY, GEMINI_KEY]).then((res) => {
     if (Array.isArray(res[SCRATCH_KEY])) scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
     if (res[SETTINGS_KEY] && typeof res[SETTINGS_KEY] === "object") settings = Object.assign(settings, res[SETTINGS_KEY]);
+    if (typeof res[GEMINI_KEY] === "string") $("geminiKeyInput").value = res[GEMINI_KEY];
     applySettingsUI();
     render();
   });
