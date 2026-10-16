@@ -73,7 +73,8 @@
       '<dl class="sift-guide">' +
       "<div><dt>Slide</dt><dd>Drag left or right to move through the article one word at a time.</dd></div>" +
       "<div><dt>Scroll up</dt><dd>Scroll the text you have already read.</dd></div>" +
-      "<div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>" +
+       "<div><dt>Double-tap</dt><dd>Highlight the sentence and save it to the scratchpad.</dd></div>" +
+       "<div><dt>Double-tap drawer</dt><dd>Explain the active sentence with AI, deeper each time.</dd></div>" +
       "</dl></section></div>" +
       '<div class="sift-toast" id="sift-toast" role="status"></div></div>';
     document.documentElement.appendChild(host);
@@ -213,7 +214,8 @@
       Promise.resolve(p).then((res) => {
         if (res && Array.isArray(res[SCRATCH_KEY])) {
           scratch = res[SCRATCH_KEY].filter((c) => c && typeof c.text === "string");
-          uid = scratch.reduce((m, c) => Math.max(m, c.id || 0), 0);
+          // String ids (ai_...) must not poison the numeric quote counter.
+          uid = scratch.reduce((m, c) => Math.max(m, typeof c.id === "number" ? c.id : 0), 0);
           scratch.forEach((c) => {
             if (c.type === "q" && isCurrentPage(c)) {
               const s = typeof c.startIdx === "number" ? c.startIdx : c.idx;
@@ -366,7 +368,15 @@
       if (c.type === "ai") {
         const tag = document.createElement("span");
         tag.className = "sift-tag";
-        tag.textContent = "AI NOTE";
+        // Legacy chips without a tier keep the old label.
+        if (c.status === "loading") {
+          tag.textContent = "AI · THINKING...";
+          tag.classList.add("sift-thinking");
+        } else if (c.status === "error" || c.status === "setup") {
+          tag.textContent = c.status === "setup" ? "AI · SETUP" : "AI · ERROR";
+        } else {
+          tag.textContent = AI_TAG[c.level] || "AI NOTE";
+        }
         b.appendChild(tag);
       }
       const p = document.createElement("p");
@@ -507,12 +517,87 @@
     vibrate([10, 30, 10]);
   }
 
-  function onDoubleTap() {
+  // Progressive AI tiers: drawer double-taps cycle 1 → 2 → 3 → 1.
+  const AI_TAG = { 1: "AI · GIST", 2: "AI · DETAIL", 3: "AI · BREAKDOWN" };
+  const AI_NAME = { 1: "Gist", 2: "Detail", 3: "Breakdown" };
+  const aiCache = new Map();
+  const aiInflight = new Set();
+  function aiKey(i, level) {
+    const clean = (location.href || "").split("#")[0].replace(/\/$/, "");
+    return clean + ":" + i + ":" + level;
+  }
+
+  function explainActiveSentence(i) {
+    if (!S.length || !S[i]) return;
+    const cur = scratch.find((c) => c.type === "ai" && c.idx === i && isCurrentPage(c));
+    const level = cur ? (cur.level >= 3 ? 1 : cur.level + 1) : 1;
+    const key = aiKey(i, level);
+    if (aiCache.has(key)) {
+      upsertAiChip(i, level, "ready", aiCache.get(key));
+      return;
+    }
+    if (aiInflight.has(key)) return; // Debounce rapid multi-taps.
+    upsertAiChip(i, level, "loading", "Analyzing sentence context...");
+    requestExplanation(i, level, key);
+  }
+
+  function upsertAiChip(i, level, status, text) {
+    let chip = scratch.find((c) => c.type === "ai" && c.idx === i && isCurrentPage(c));
+    if (!chip) {
+      chip = {
+        id: "ai_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        type: "ai",
+        idx: i,
+        level,
+        status,
+        text,
+        quote: S[i].t,
+        src: title,
+        url: location.href,
+        createdAt: Date.now()
+      };
+      scratch.unshift(chip);
+    } else {
+      chip.level = level;
+      chip.status = status;
+      chip.text = text;
+      chip.quote = S[i].t;
+    }
+    persist();
+    flashDrawer();
+    render();
+    vibrate([10, 30, 10]);
+    return chip.id;
+  }
+
+  // Slice 1 stub: canned text so routing, tiers, and rendering verify
+  // offline. Slice 2 replaces the body with the Gemini fetch.
+  function requestExplanation(i, level, key) {
+    aiInflight.add(key);
+    const chip = scratch.find((c) => c.type === "ai" && c.idx === i && isCurrentPage(c));
+    const chipId = chip && chip.id;
+    setTimeout(() => {
+      aiInflight.delete(key);
+      if (!alive()) return;
+      const text = "[Stub " + AI_TAG[level] + "] Gemini wiring lands in slice 2.";
+      aiCache.set(key, text);
+      const live = scratch.find((c) => c.id === chipId);
+      if (!live || live.level !== level) return; // Superseded by a newer tap.
+      live.status = "ready";
+      live.text = text;
+      persist();
+      render();
+    }, 300);
+  }
+
+  function onDoubleTap(origin) {
     const now = performance.now();
     if (lastTap && now - lastTap.t < 350) {
       lastTap = null;
       clearSelection();
-      drop(idx);
+      // Stream double-tap highlights verbatim; drawer double-tap explains.
+      if (origin === "drawer") explainActiveSentence(idx);
+      else drop(idx);
       return;
     }
     lastTap = { t: now, idx };
@@ -706,7 +791,7 @@
       return;
     }
     if (s.moved) return;
-    onDoubleTap();
+    onDoubleTap(s.el === drawer ? "drawer" : "stream");
   });
   window.addEventListener("pointercancel", cancelReadingGesture);
   bindReadingGestures(stream, true);
@@ -737,11 +822,18 @@
     if (e.button > 0) return;
     setOpen(false);
   });
+  function formatCopyItem(c) {
+    if (c.type === "ai" && c.level && c.quote) {
+      return "> " + c.quote + "\n\n*AI Note (Level " + c.level + ": " + (AI_NAME[c.level] || "") + "): " + c.text + "*";
+    }
+    return "- " + c.text;
+  }
+
   $("sift-copy").addEventListener("click", () => {
     const pageItems = scratch.filter(isCurrentPage);
     if (!pageItems.length) { toast("Nothing to copy on this page"); return; }
     const text = title + "\n" + location.href + "\n\n" +
-      pageItems.slice().reverse().map((c) => "- " + c.text).join("\n");
+      pageItems.slice().reverse().map(formatCopyItem).join("\n");
     try {
       navigator.clipboard.writeText(text).then(
         () => toast("Copied " + pageItems.length + (pageItems.length === 1 ? " item" : " items")),
