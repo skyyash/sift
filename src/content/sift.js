@@ -277,6 +277,11 @@
   function renderActive() {
     const cur = S[idx];
     if (!cur) return;
+    // Fixed reading size: the settings class is the only size ever applied.
+    // Long sentences overflow with native scroll instead of shrinking.
+    // Preserve scroll across re-renders during a scrub so words never move.
+    const prevScroll = activeEl.scrollTop;
+    const wasScrubbing = !!(wordSeek && wordSeek.idx === idx);
     activeText.replaceChildren();
     let inner = activeText;
     if (hl.has(idx)) {
@@ -292,37 +297,28 @@
     words.forEach((text, i) => {
       const w = document.createElement("span");
       w.textContent = text;
-      if (scrubbing) {
-        if (i === activeWordIdx) {
-          w.className = "sift-seek-word";
-          activeSpan = w;
-        } else if (i > activeWordIdx) {
-          w.className = "sift-word-dim";
-        }
+      // Every word reserves identical highlight padding via sift-w, so
+      // activating/deactivating never changes metrics or re-wraps lines.
+      if (scrubbing && i === activeWordIdx) {
+        w.className = "sift-w sift-seek-word";
+        activeSpan = w;
+      } else if (scrubbing && i > activeWordIdx) {
+        w.className = "sift-w sift-word-dim";
+      } else {
+        w.className = "sift-w";
       }
       inner.appendChild(w);
     });
 
     activeText.className = textSizeClass;
-    fitActive();
-    if (activeSpan) {
-      activeSpan.scrollIntoView({ block: "nearest", behavior: "auto" });
+    // No fitActive(): font size stays exactly as selected in settings.
+    // Overflow is handled by native scroll in .sift-active, never shrinking.
+    // Never call scrollIntoView during scrub: it yanks the box on every
+    // word step. Keep the box top-anchored; extra words wait below the fold.
+    if (scrubbing || wasScrubbing || activeSpan) {
+      activeEl.scrollTop = prevScroll;
     } else {
       activeEl.scrollTop = 0;
-    }
-  }
-  // Shrink long landed sentences until they fit the fixed box.
-  // Past the smallest size, native scroll is the backstop.
-  const FIT_ORDER = ["", "sift-m", "sift-l", "sift-xl", "sift-xs"];
-  function fitActive() {
-    let i = FIT_ORDER.indexOf(activeText.className);
-    if (i < 0) i = 0;
-    let guard = 0;
-    while (guard++ < FIT_ORDER.length &&
-      activeEl.scrollHeight > activeEl.clientHeight + 1 &&
-      i < FIT_ORDER.length - 1) {
-      i++;
-      activeText.className = FIT_ORDER[i];
     }
   }
 

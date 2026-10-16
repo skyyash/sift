@@ -192,6 +192,11 @@
   padding-inline: 2px;
   color: var(--ink);
 }
+#sift-root .sift-active p span.sift-w {
+  padding-inline: 2px;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px transparent;
+}
 #sift-root .sift-seek-word {
   background: var(--tint);
   border-radius: 3px;
