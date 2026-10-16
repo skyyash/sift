@@ -248,7 +248,9 @@
       para.appendChild(sp);
     }
     renderActive();
-    activeEl.scrollTop = 0;
+    // A fresh landed sentence starts at the top. During a cross-sentence
+    // scrub renderActive already positioned the follow-scroll, so keep it.
+    if (!(wordSeek && wordSeek.idx === idx)) activeEl.scrollTop = 0;
     bar.style.width = (S.length > 1 ? (idx / (S.length - 1)) * 100 : 100) + "%";
     seekEl.setAttribute("aria-valuemax", String(S.length));
     seekEl.setAttribute("aria-valuenow", String(idx + 1));
@@ -313,13 +315,27 @@
     activeText.className = textSizeClass;
     // No fitActive(): font size stays exactly as selected in settings.
     // Overflow is handled by native scroll in .sift-active, never shrinking.
-    // Never call scrollIntoView during scrub: it yanks the box on every
-    // word step. Keep the box top-anchored; extra words wait below the fold.
+    // Follow-scroll only while scrubbing and only when the active word is
+    // out of view: nudge by exactly the overflow amount, never on every step.
     if (scrubbing || wasScrubbing || activeSpan) {
       activeEl.scrollTop = prevScroll;
+      if (scrubbing && activeSpan) followActiveWord(activeEl, activeSpan, prevScroll);
     } else {
       activeEl.scrollTop = 0;
     }
+  }
+  function followActiveWord(boxEl, wordEl, prevScroll) {
+    try {
+      const box = boxEl.getBoundingClientRect();
+      const r = wordEl.getBoundingClientRect();
+      if (!box || !r || !box.height) return;
+      const pad = 8;
+      if (r.bottom > box.bottom - pad) {
+        boxEl.scrollTop = prevScroll + (r.bottom - box.bottom) + pad;
+      } else if (r.top < box.top + pad) {
+        boxEl.scrollTop = prevScroll + (r.top - box.top) - pad;
+      }
+    } catch (e) {}
   }
 
   function isCurrentPage(c) {
