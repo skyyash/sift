@@ -138,6 +138,7 @@ button:focus-visible {
   scrollbar-color: var(--hair) transparent;
 }
 .chip {
+  flex-shrink: 0;
   display: flex;
   align-items: flex-start;
   gap: 8px;
@@ -158,6 +159,7 @@ button:focus-visible {
   line-height: 21px;
   color: var(--ink);
   overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 .chip .src {
   display: block;
