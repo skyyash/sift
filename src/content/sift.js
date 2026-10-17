@@ -571,7 +571,9 @@
   }
 
   const GEMINI_KEY = "geminiApiKey";
-  const GEMINI_MODELS = ["gemini-2.0-flash", "gemini-1.5-flash"];
+  // 2.0/1.5 Flash shut down June 2026 / 2025. 3.8 Flash is current stable;
+  // 3.6 Flash is the documented fallback.
+  const GEMINI_MODELS = ["gemini-3.8-flash", "gemini-3.6-flash"];
   function aiPromptFor(level, articleTitle) {
     if (level === 2) {
       return "Provide a deeper explanation (3-4 sentences) of this sentence from the article ('" +
@@ -660,7 +662,7 @@
               "\nTarget Sentence: " + targetSentence
           }]
         }],
-        generationConfig: { temperature: 0.3, maxOutputTokens: 300 }
+        generationConfig: { maxOutputTokens: 300 }
       };
       const tryModel = (n) => callGemini(GEMINI_MODELS[n], apiKey, body).catch((err) => {
         if (n + 1 < GEMINI_MODELS.length) return tryModel(n + 1);
